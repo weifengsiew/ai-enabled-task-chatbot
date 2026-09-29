@@ -15,15 +15,19 @@ class Task:
         self.note = None
 
     def mark_done(self) -> None:
+    """Mark the task as done."""
         self.done = True
     
     def unmark_done(self) -> None:
+    """Mark the task as not done."""
         self.done = False
 
     def add_note(self, note: str) -> None:
+    """Add a note to the task."""
         self.note = note
 
     def __str__(self) -> str:
+    """Return a string representation of the task."""
         mark = "X" if self.done else " "
         note = f"Note: {self.note}" if self.note else None
         return f"[{mark}] {self.description}" + (f"\n{note}" if note is not None else "")
@@ -34,13 +38,16 @@ class Tasks:
         self.tasks: list[Task] = []
 
     def add_task(self, description: str) -> None:
+    """Add a new task to the list."""
         self.tasks.append(Task(description))
 
     def list_tasks(self) -> None:
+    """List all tasks."""
         for i, task in enumerate(self.tasks, start=1):
             print(f"{i}. {task}")
 
     def mark_task(self, user_response: str) -> None:
+    """Mark a task as done."""
         parts = user_response.split()
 
         if len(parts) == 2 and parts[1].isdigit():
@@ -56,6 +63,7 @@ class Tasks:
             print("Use: mark <number>")
 
     def unmark_task(self, user_response: str) -> None:
+    """Mark a task as not done."""
         parts = user_response.split()
 
         if len(parts) == 2 and parts[1].isdigit():
@@ -71,6 +79,7 @@ class Tasks:
             print("Use: unmark <number>")
 
     def note_task(self, user_response: str) -> None:
+    """Add a note to a task."""
         parts = user_response.split(" ", 2)
 
         if len(parts) == 3 and parts[1].isdigit():
