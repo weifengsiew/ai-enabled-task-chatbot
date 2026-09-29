@@ -8,5 +8,5 @@ def farewell() -> None:
 
 def main() -> None:
     """Run bao."""
-    print("bao here. What needs doing?")
+    print("Hello! I'm bao. What needs doing?")
     farewell()
