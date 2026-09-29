@@ -1,10 +1,13 @@
 """Command-line entry point for bao."""
 
+def greeting() -> None:
+    """Greet the user."""
+    print("Hello! I'm bao. What needs doing?")
 
 def farewell() -> None:
     """End the conversation."""
     print("Later.")
-
+    
 class Task:
     def __init__(self, description: str) -> None:
         self.description = description
@@ -26,10 +29,68 @@ class Task:
         return f"[{mark}] {self.description}" + (f"\n{note}" if note is not None else "")
 
 
+class Tasks:
+    def __init__(self) -> None:
+        self.tasks: list[Task] = []
+
+    def add_task(self, description: str) -> None:
+        self.tasks.append(Task(description))
+
+    def list_tasks(self) -> None:
+        for i, task in enumerate(self.tasks, start=1):
+            print(f"{i}. {task}")
+
+    def mark_task(self, user_response: str) -> None:
+        parts = user_response.split()
+
+        if len(parts) == 2 and parts[1].isdigit():
+            task_number = int(parts[1])
+
+            if 1 <= task_number <= len(self.tasks):
+                self.tasks[task_number - 1].mark_done()
+                print("Done:")
+                print(self.tasks[task_number - 1])
+            else:
+                print("Task does not exist.")
+        else:
+            print("Use: mark <number>")
+
+    def unmark_task(self, user_response: str) -> None:
+        parts = user_response.split()
+
+        if len(parts) == 2 and parts[1].isdigit():
+            task_number = int(parts[1])
+
+            if 1 <= task_number <= len(self.tasks):
+                self.tasks[task_number - 1].unmark_done()
+                print("Not done:")
+                print(self.tasks[task_number - 1])
+            else:
+                print("Task does not exist.")
+        else:
+            print("Use: unmark <number>")
+
+    def note_task(self, user_response: str) -> None:
+        parts = user_response.split(" ", 2)
+
+        if len(parts) == 3 and parts[1].isdigit():
+            task_number = int(parts[1])
+            note = parts[2]
+
+            if 1 <= task_number <= len(self.tasks):
+                self.tasks[task_number - 1].add_note(note)
+                print("Noted:")
+                print(self.tasks[task_number - 1])
+            else:
+                print("Task does not exist.")
+        else:
+            print("Use: note <number> <note>")
+    
+
 def chat() -> None:
     """Chat with the user."""
 
-    tasks: list[Task] = []
+    tasks = Tasks()
 
     while True:
         user_response = input("> ")
@@ -38,62 +99,24 @@ def chat() -> None:
             break
 
         elif user_response == "list":
-            for i, task in enumerate(tasks, start=1):
-                print(f"{i}. {task}")
+            tasks.list_tasks()
 
         elif user_response.startswith("mark "):
-            parts = user_response.split()
-
-            if len(parts) == 2 and parts[1].isdigit():
-                task_number = int(parts[1])
-
-                if 1 <= task_number <= len(tasks):
-                    tasks[task_number - 1].mark_done()
-                    print("Done:")
-                    print(tasks[task_number - 1])
-                else:
-                    print("Task does not exist.")
-            else:
-                print("Use: mark <number>")
+            tasks.mark_task(user_response)
 
         elif user_response.startswith("unmark "):
-            parts = user_response.split()
+            tasks.unmark_task(user_response)
 
-            if len(parts) == 2 and parts[1].isdigit():
-                task_number = int(parts[1])
-
-                if 1 <= task_number <= len(tasks):
-                    tasks[task_number - 1].unmark_done()
-                    print("Not done:")
-                    print(tasks[task_number - 1])
-                else:
-                    print("Task does not exist.")
-            else:
-                print("Use: mark <number>")
-        
         elif user_response.startswith("note "):
-            parts = user_response.split(" ", 2)
-
-            if len(parts) == 3 and parts[1].isdigit():
-                task_number = int(parts[1])
-                note = parts[2]
-
-                if 1 <= task_number <= len(tasks):
-                    tasks[task_number - 1].add_note(note)
-                    print("Noted:")
-                    print(tasks[task_number - 1])
-                else:
-                    print("Task does not exist.")
-            else:
-                print("Use: note <number> <note>")
+            tasks.note_task(user_response)
 
         else:
             task = Task(user_response)
-            tasks.append(task)
+            tasks.add_task(user_response)
             print(f"Added: {user_response}")
 
 def main() -> None:
     """Run bao."""
-    print("Hello! I'm bao. What needs doing?")
+    greeting()
     chat()
     farewell()
