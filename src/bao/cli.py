@@ -1,4 +1,5 @@
 """Command-line entry point for bao."""
+import re
 
 def greeting() -> None:
     """Greet the user."""
@@ -14,7 +15,7 @@ class Task:
         self.done = False
         self.note = None
         self.task_type = task_type
-        self.recurring_day = None
+        self.day = None
 
     def mark_done(self) -> None:
         """Mark the task as done."""
@@ -38,52 +39,117 @@ class Task:
         task_type_mark = task_type_marks.get(self.task_type, "")
         done_mark = "[X]" if self.done else "[ ]"
         note = f"Note: {self.note}" if self.note else ""
-        recurring_day = f" (every: {self.recurring_day})" if self.recurring_day else ""
 
-        return f"{task_type_mark}{done_mark}{self.description}" + (
-            f"\n{note}" if note else "") + recurring_day
+        time_info = ""
+        if self.task_type == "recurring" and self.day:
+            time_info = f" (every: {self.day})"
+        elif self.task_type == "deadline" and self.day:
+            time_info = f" (by: {self.day})"
+        elif self.task_type == "event" and self.start and self.end:
+            time_info = f" (from: {self.start} to: {self.end})"
+
+        return f"{task_type_mark}{done_mark}{self.description}" + time_info + (
+            f"\n{note}" if note else "") 
 
 class Tasks:
     def __init__(self) -> None:
         self.tasks: list[Task] = []
 
+    def add_todo_task(self, user_response: str) -> None:
+        """Add a todo task."""
+        todo_pattern = r"^todo\s+(.+)$"
+        match = re.fullmatch(todo_pattern, user_response)
+
+        if not match:
+            print("Use: todo <description>")
+            return
+
+        description = match.group(1)
+
+        task = Task(description, "todo")
+        self.tasks.append(task)
+
+        print(f"Added:\n{task}")
+    
+    def add_recurring_task(self, user_response: str) -> None:
+        """Add a recurring task."""
+        recurring_pattern = r"^recurring\s+(.+?)\s+/every\s+(\w+)$"
+        match = re.fullmatch(recurring_pattern, user_response)
+
+        if not match:
+            print("Use: recurring <description> /every <day>")
+            return
+
+        description = match.group(1)
+        day = match.group(2)
+
+        task = Task(description, "recurring")
+        task.day = day
+
+        self.tasks.append(task)
+        print(f"Added:\n{task}")
+
+    def add_deadline_task(self, user_response: str) -> None:
+        """Add a deadline task."""
+        deadline_pattern = r"^deadline\s+(.+?)\s+/by\s+(\w+)$"
+        match = re.fullmatch(deadline_pattern, user_response)
+
+        if not match:
+            print("Use: deadline <description> /by <day>")
+            return
+
+        description = match.group(1)
+        day = match.group(2)
+
+        task = Task(description, "deadline")
+        task.day = day
+
+        self.tasks.append(task)
+        print(f"Added:\n{task}")
+
+    def add_event_task(self, user_response: str) -> None:
+        """Add an event task."""
+        event_pattern = r"^event\s+(.+?)\s+/from\s+(.+?)\s+/to\s+(.+)$"
+        match = re.fullmatch(event_pattern, user_response)
+
+        if not match:
+            print("Use: event <description> /from <start> /to <end>")
+            return
+
+        description = match.group(1)
+        start = match.group(2)
+        end = match.group(3)
+
+        task = Task(description, "event")
+        task.start = start
+        task.end = end
+
+        self.tasks.append(task)
+        print(f"Added:\n{task}")
+
     def add_task(self, user_response: str) -> None:
         """Add a new task to the list."""
-        parts = user_response.split(" ", 1)
+        task_type = user_response.split(" ", 1)[0]
 
-        if len(parts) == 2:
-            task_type = parts[0]
-            description = parts[1]
-        
-            if task_type in ["todo", "deadline", "event"]:
-                task = Task(description, task_type)
-                self.tasks.append(task)
-                print(f"Added:\n{task}")
+        if task_type == "todo":
+            self.add_todo_task(user_response)
 
-            elif task_type == "recurring":
-                left, day = user_response.split(" /every ", 1)
-                task_type, description = left.split(" ", 1)
-                parts = [task_type, description, "/every", day]
-                task = Task(description, task_type)
-                task.recurring_day = day
-                self.tasks.append(task)
-                print(f"Added:\n{task}")
+        elif task_type == "event":
+            self.add_event_task(user_response)
 
-            else:
-                print(
-                "Use:\n"
-                "  todo <description>\n"
-                "  deadline <description>\n"
-                "  event <description>"
-                )
+        elif task_type == "deadline":
+            self.add_deadline_task(user_response)
+
+        elif task_type == "recurring":
+            self.add_recurring_task(user_response)
+
         else:
             print(
                 "Use:\n"
                 "  todo <description>\n"
-                "  deadline <description>\n"
-                "  event <description>\n"
-                "  recurring <description>"
-            )
+                "  deadline <description> /by <day>\n"
+                "  event <description> /from <start> /to <end>\n"
+                "  recurring <description> /every <day>")
 
     def list_tasks(self) -> None:
         """List all tasks."""
@@ -95,53 +161,70 @@ class Tasks:
 
     def mark_task(self, user_response: str) -> None:
         """Mark a task as done."""
-        parts = user_response.split()
+        mark_pattern = r"^mark\s+(\d+)$"
+        match = re.fullmatch(mark_pattern, user_response)
 
-        if len(parts) == 2 and parts[1].isdigit():
-            task_number = int(parts[1])
-
-            if 1 <= task_number <= len(self.tasks):
-                self.tasks[task_number - 1].mark_done()
-                print("Done:")
-                print(self.tasks[task_number - 1])
-            else:
-                print("Task does not exist.")
-        else:
+        if not match:
             print("Use: mark <number>")
+            return
+
+        task_number = int(match.group(1))
+
+        if 1 <= task_number <= len(self.tasks):
+            self.tasks[task_number - 1].mark_done()
+            print("Done:")
+            print(self.tasks[task_number - 1])
+        else:
+            if self.tasks:
+                invalid_task_number_message = f"Choose a number from 1 to {len(self.tasks)}."
+            else:
+                invalid_task_number_message = "There are no tasks yet."
+            print(f"No task {task_number}. {invalid_task_number_message}")
 
     def unmark_task(self, user_response: str) -> None:
         """Mark a task as not done."""
-        parts = user_response.split()
+        unmark_pattern = r"^unmark\s+(\d+)$"
+        match = re.fullmatch(unmark_pattern, user_response)
 
-        if len(parts) == 2 and parts[1].isdigit():
-            task_number = int(parts[1])
-
-            if 1 <= task_number <= len(self.tasks):
-                self.tasks[task_number - 1].unmark_done()
-                print("Not done:")
-                print(self.tasks[task_number - 1])
-            else:
-                print("Task does not exist.")
-        else:
+        if not match:
             print("Use: unmark <number>")
+            return
+
+        task_number = int(match.group(1))
+
+        if 1 <= task_number <= len(self.tasks):
+            self.tasks[task_number - 1].unmark_done()
+            print("Not done:")
+            print(self.tasks[task_number - 1])
+        else:
+            if self.tasks:
+                invalid_task_number_message = f"Choose a number from 1 to {len(self.tasks)}."
+            else:
+                invalid_task_number_message = "There are no tasks yet."
+            print(f"No task {task_number}. {invalid_task_number_message}")
 
     def note_task(self, user_response: str) -> None:
         """Add a note to a task."""
-        parts = user_response.split(" ", 2)
+        note_pattern = r"^note\s+(\d+)\s+(.+)$"
+        match = re.fullmatch(note_pattern, user_response)
 
-        if len(parts) == 3 and parts[1].isdigit():
-            task_number = int(parts[1])
-            note = parts[2]
-
-            if 1 <= task_number <= len(self.tasks):
-                self.tasks[task_number - 1].add_note(note)
-                print("Noted:")
-                print(self.tasks[task_number - 1])
-            else:
-                print("Task does not exist.")
-        else:
+        if not match:
             print("Use: note <number> <note>")
-    
+            return
+
+        task_number = int(match.group(1))
+        note = match.group(2)
+
+        if 1 <= task_number <= len(self.tasks):
+            self.tasks[task_number - 1].add_note(note)
+            print("Noted:")
+            print(self.tasks[task_number - 1])
+        else:
+            if self.tasks:
+                invalid_task_number_message = f"Choose a number from 1 to {len(self.tasks)}."
+            else:
+                invalid_task_number_message = "There are no tasks yet."
+            print(f"No task {task_number}. {invalid_task_number_message}")
 
 def chat() -> None:
     """Chat with the user."""
@@ -157,20 +240,20 @@ def chat() -> None:
         elif user_response == "list":
             tasks.list_tasks()
 
-        elif user_response.startswith("mark "):
+        elif user_response.startswith("mark"):
             tasks.mark_task(user_response)
 
-        elif user_response.startswith("unmark "):
+        elif user_response.startswith("unmark"):
             tasks.unmark_task(user_response)
 
-        elif user_response.startswith("note "):
+        elif user_response.startswith("note"):
             tasks.note_task(user_response)
         
-        elif user_response.startswith(("todo ", "deadline ", "event ", "recurring")):
+        elif user_response.startswith(("todo", "deadline", "event", "recurring")):
             tasks.add_task(user_response)
             
         else:
-            print("I don't understand that command.")
+            print("Never heard of it. Try: todo, deadline, event, recurring, list, mark, unmark, note, bye.")
 
 def main() -> None:
     """Run bao."""
