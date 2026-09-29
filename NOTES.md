@@ -77,3 +77,16 @@ Using a boolean.
 Why must the blank-input response happen inside the conversation loop?
 
 So that the user can provide their response.
+
+## Stage 2
+Where do the tasks live while bao is running, and why do they disappear after it exits?
+
+It lives in the tasks list. The tasks list is not saved.
+
+How does bao decide whether list is a command or a task description?
+
+I used a boolean. 
+
+Why are the displayed numbers one greater than the positions commonly used inside Python?
+
+I specified start=1 in enumerate.
