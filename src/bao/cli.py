@@ -9,4 +9,11 @@ def farewell() -> None:
 def main() -> None:
     """Run bao."""
     print("Hello! I'm bao. What needs doing?")
+
+    response = input("> ")
+
+    while response != "bye":
+        print(response)
+        response = input("> ")
+
     farewell()

@@ -64,4 +64,16 @@ I would change the main() function.
 
 Why is running the command yourself still useful after an agent has run it?
 
+## Stage 1
 
+What makes the program ask for another line instead of exiting after the first one?
+
+The while loop. 
+
+How does it distinguish bye, a blank line, and an ordinary line?
+
+Using a boolean. 
+
+Why must the blank-input response happen inside the conversation loop?
+
+So that the user can provide their response.
