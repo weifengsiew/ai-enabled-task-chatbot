@@ -20,12 +20,6 @@ All 13 commands are handled inside `run()`. The table follows their existing ord
 | `find` | `line.startswith("find")` | `find report` | Search descriptions by case-insensitive substring. |
 | `due` | `line.startswith("due")` | `due 2026-10-01` | Show deadline tasks due on that date. |
 
-Before these conditions, `if not line.strip():` handles empty or whitespace-only input. The final `else:` handles unrecognized input.
-
-Task numbers start at 1. Every command that changes tasks immediately saves them.
-
-`bye`, `list`, and `clear` require exact matches. `todo` requires a following space. The remaining commands use loose `startswith(...)` checks.
-
 ## refactor step 1
 
 Extract each branch into a function using a consistent `handle_<command>` naming pattern.
@@ -68,4 +62,29 @@ Extracted handlers into `command_handlers.py`; `bao.py` retains loading, command
 
 Sizes span `def` through the final statement, including docstrings and blank lines, across both modules. The immutable `DATA_FILE` path is excluded from the mutable-value count. These are observations, not targets.
 
-Next: separate `ui`, `parser`, `tasklist`, and `storage`, and remove duplicated save logic.
+## refactor step 2
+
+Review the functions in `command_handlers.py`, prioritizing those that are long or difficult to understand. Add comments identifying which area owns each logical block, using these responsibility definitions:
+
+- `ui` owns the conversation and displayed messages.
+- `parser` turns input into a command or a useful input error.
+- `tasklist` owns task-list operations.
+- `storage` loads and saves task data.
+
+Where a block mixes responsibilities, identify each responsibility and explain where they overlap.
+
+This step adds comments only to document the current code and guide later separation. Do not do anything else.
+
+### Step 2 results
+
+Added comments to `command_handlers.py` identifying `ui`, `parser`, `tasklist`, and `storage` responsibilities, including blocks where responsibilities overlap. Existing annotations in `handle_list()` were preserved.
+
+Only comments were added. All original code lines were preserved, and the Python AST was unchanged.
+
+### Reflections and observations
+
+- Extracting handlers shortened `run()`, but individual handlers still combine input parsing, task operations, displayed messages, and saving.
+- Input validation and error display are closely coupled: a handler detects invalid input and immediately prints a message.
+- Checking whether a task number is an integer belongs to `parser`; checking whether that task exists belongs to `tasklist`.
+- Date conversion serves different responsibilities: interpreting user input belongs to `parser`, selecting deadlines belongs to `tasklist`, and formatting dates for display belongs to `ui`.
+- The same two-line save block appears in eight handlers, making storage a clear first extraction.
