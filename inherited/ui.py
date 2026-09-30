@@ -97,3 +97,45 @@ def show_tasks_left(count: int) -> None:
         None.
     """
     print(f"{count} tasks left.")
+
+
+def show_marked(task: dict[str, Any]) -> None:
+    """Print confirmation of a task's updated completion state.
+
+    Args:
+        task: Updated task containing its completion state and description.
+
+    Returns:
+        None.
+    """
+    print("Done:" if task["done"] else "Not done:")
+    print(f"  {format_task_summary(task)}")
+
+
+def show_noted(task: dict[str, Any]) -> None:
+    """Print confirmation of a task's updated note.
+
+    Args:
+        task: Updated task containing its description and note.
+
+    Returns:
+        None.
+    """
+    print("Noted:")
+    print(f'  {task["description"]}')
+    print(f'  Note: {task["note"]}')
+
+
+def show_deleted(task: dict[str, Any], remaining_count: int) -> None:
+    """Print the deleted task's description and remaining task count.
+
+    Args:
+        task: Removed task containing its description.
+        remaining_count: Number of tasks remaining after deletion.
+
+    Returns:
+        None.
+    """
+    print("Deleted:")
+    print(f'  {task["description"]}')
+    show_tasks_left(remaining_count)

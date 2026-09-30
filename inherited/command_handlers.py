@@ -5,11 +5,31 @@ from pathlib import Path
 from typing import Any
 
 if __package__:
+    from .parser import parse_deadline_datetime, parse_required_pair, parse_task_index
     from .storage import save_tasks
-    from .ui import format_task, format_task_summary, show_added, show_tasks, show_tasks_left
+    from .ui import (
+        format_task,
+        format_task_summary,
+        show_added,
+        show_deleted,
+        show_marked,
+        show_noted,
+        show_tasks,
+        show_tasks_left,
+    )
 else:
+    from parser import parse_deadline_datetime, parse_required_pair, parse_task_index
     from storage import save_tasks
-    from ui import format_task, format_task_summary, show_added, show_tasks, show_tasks_left
+    from ui import (
+        format_task,
+        format_task_summary,
+        show_added,
+        show_deleted,
+        show_marked,
+        show_noted,
+        show_tasks,
+        show_tasks_left,
+    )
 
 
 def handle_empty_input() -> None:
@@ -82,29 +102,16 @@ def handle_deadline(line: str, tasks: list[dict[str, Any]], data_file: Path) -> 
     Returns:
         None.
     """
-    # Parser: extract the arguments and check for the /by separator.
+    # Parser: require a description and /by value, then parse the deadline.
     rest = line[len("deadline") :].strip()
-    if "/by" not in rest:
-        # Parser / UI: validation detects invalid input; UI displays the input error here.
-        print("A deadline needs something to do and a /by.")
-        return
-    # Parser: split the description and date, requiring both values.
-    description, when_text = (part.strip() for part in rest.split("/by", 1))
-    if not description or not when_text:
-        # Parser / UI: validation detects invalid input; UI displays the input error here.
-        print("A deadline needs something to do and a /by.")
-        return
-    # Parser: accept a date with an optional four-digit time.
-    parsed = None
-    for pattern in ("%Y-%m-%d %H%M", "%Y-%m-%d"):
-        try:
-            parsed = datetime.strptime(when_text, pattern)
-            break
-        except ValueError:
-            pass
-    if parsed is None:
-        # Parser / UI: validation detects invalid input; UI displays the input error here.
-        print("Use YYYY-MM-DD with an optional four-digit time.")
+    try:
+        description, when_text = parse_required_pair(
+            rest, "/by", "A deadline needs something to do and a /by."
+        )
+        parsed = parse_deadline_datetime(when_text)
+    except ValueError as error:
+        # UI: display the parser's input error.
+        print(str(error))
         return
     # Tasklist: build the task from parsed values and append it to the list.
     task = {
@@ -172,17 +179,15 @@ def handle_recurring(line: str, tasks: list[dict[str, Any]], data_file: Path) ->
     Returns:
         None.
     """
-    # Parser: extract the arguments and check for /every.
+    # Parser: require a description and /every value.
     rest = line[len("recurring") :].strip()
-    if "/every" not in rest:
-        # Parser / UI: validation detects invalid input; UI displays the input error here.
-        print("A recurring task needs something to do and an /every.")
-        return
-    # Parser: split the description and interval, requiring both values.
-    description, every = (part.strip() for part in rest.split("/every", 1))
-    if not description or not every:
-        # Parser / UI: validation detects invalid input; UI displays the input error here.
-        print("A recurring task needs something to do and an /every.")
+    try:
+        description, every = parse_required_pair(
+            rest, "/every", "A recurring task needs something to do and an /every."
+        )
+    except ValueError as error:
+        # UI: display the parser's input error.
+        print(str(error))
         return
     # Tasklist: build the task from parsed values and append it to the list.
     task = {
@@ -219,10 +224,10 @@ def handle_mark_unmark(line: str, tasks: list[dict[str, Any]], data_file: Path) 
         return
     try:
         # Parser: convert the task number to a zero-based index.
-        index = int(pieces[1]) - 1
-    except ValueError:
-        # Parser / UI: validation detects invalid input; UI displays the input error here.
-        print("The task number must be a whole number.")
+        index = parse_task_index(pieces[1])
+    except ValueError as error:
+        # UI: display the parser's input error.
+        print(str(error))
         return
     # Tasklist: check that the requested task exists in the current list.
     if index < 0 or index >= len(tasks):
@@ -232,8 +237,7 @@ def handle_mark_unmark(line: str, tasks: list[dict[str, Any]], data_file: Path) 
     # Tasklist: update the selected task's completion state.
     tasks[index]["done"] = command == "mark"
     # UI: format and display the updated completion state and description.
-    print("Done:" if command == "mark" else "Not done:")
-    print(f"  {format_task_summary(tasks[index])}")
+    show_marked(tasks[index])
     # Storage: create the destination directory and save the task list as JSON.
     save_tasks(tasks, data_file)
 
@@ -257,10 +261,10 @@ def handle_note(line: str, tasks: list[dict[str, Any]], data_file: Path) -> None
         return
     try:
         # Parser: convert the task number to a zero-based index.
-        index = int(pieces[1]) - 1
-    except ValueError:
-        # Parser / UI: validation detects invalid input; UI displays the input error here.
-        print("The task number must be a whole number.")
+        index = parse_task_index(pieces[1])
+    except ValueError as error:
+        # UI: display the parser's input error.
+        print(str(error))
         return
     # Tasklist: check that the requested task exists in the current list.
     if index < 0 or index >= len(tasks):
@@ -270,9 +274,7 @@ def handle_note(line: str, tasks: list[dict[str, Any]], data_file: Path) -> None
     # Tasklist: replace the selected task's note.
     tasks[index]["note"] = pieces[2]
     # UI: display the task and its updated note.
-    print("Noted:")
-    print(f'  {tasks[index]["description"]}')
-    print(f"  Note: {pieces[2]}")
+    show_noted(tasks[index])
     # Storage: create the destination directory and save the task list as JSON.
     save_tasks(tasks, data_file)
 
@@ -296,10 +298,10 @@ def handle_delete(line: str, tasks: list[dict[str, Any]], data_file: Path) -> No
         return
     try:
         # Parser: convert the task number to a zero-based index.
-        index = int(pieces[1]) - 1
-    except ValueError:
-        # Parser / UI: validation detects invalid input; UI displays the input error here.
-        print("The task number must be a whole number.")
+        index = parse_task_index(pieces[1])
+    except ValueError as error:
+        # UI: display the parser's input error.
+        print(str(error))
         return
     # Tasklist: check that the requested task exists in the current list.
     if index < 0 or index >= len(tasks):
@@ -309,9 +311,7 @@ def handle_delete(line: str, tasks: list[dict[str, Any]], data_file: Path) -> No
     # Tasklist: remove the selected task and retain it for the confirmation.
     removed = tasks.pop(index)
     # UI: display the removed task and the remaining task count.
-    print("Deleted:")
-    print(f'  {removed["description"]}')
-    show_tasks_left(len(tasks))
+    show_deleted(removed, len(tasks))
     # Storage: create the destination directory and save the task list as JSON.
     save_tasks(tasks, data_file)
 

@@ -185,3 +185,33 @@ Preserve existing output and verify the changes with the supplied tests without 
 
 - Added `format_task_summary()`, `show_tasks()`, and `show_tasks_left()` to `ui.py` and reused them in the relevant handlers, preserving existing output.
 - All **13 supplied tests passed unchanged**.
+
+## refactor step 10
+
+Extract three confirmation-message blocks into `ui.py`:
+
+- `show_marked(task: dict[str, Any]) -> None`: move the completion-state heading and indented summary from `handle_mark_unmark()`, choosing the heading from `task["done"]` and reusing `format_task_summary()`.
+- `show_noted(task: dict[str, Any]) -> None`: move the note confirmation from `handle_note()`, using the updated task's description and note.
+- `show_deleted(task: dict[str, Any], remaining_count: int) -> None`: move the deletion confirmation from `handle_delete()`, reusing `show_tasks_left()`.
+
+Preserve existing output and verify the changes with the supplied tests without modifying them.
+
+### Step 10 results
+
+- Added `show_marked()`, `show_noted()`, and `show_deleted()` to `ui.py` and called them from the corresponding handlers, preserving confirmation output.
+- All **13 supplied tests passed unchanged**.
+
+## refactor step 11
+
+Extract three input-parsing helpers into a new `parser.py`:
+
+- `parse_task_index(text: str) -> int`: share integer conversion and subtraction between mark/unmark, note, and delete. Keep task-existence checks in the handlers as a tasklist responsibility.
+- `parse_required_pair(text: str, separator: str, error_message: str) -> tuple[str, str]`: share separator checks, splitting once, whitespace stripping, and required-value checks between deadline and recurring commands.
+- `parse_deadline_datetime(text: str) -> datetime`: move the deadline date-format loop into parser, accepting a date with an optional four-digit time.
+
+Helpers return parsed values or raise `ValueError` with the existing input-error messages. Handlers display those errors and return. Preserve existing behavior and run the supplied tests without modifying them.
+
+### Step 11 results
+
+- Added all three helpers to `parser.py` and reused them in the relevant handlers, preserving input errors and leaving task-existence checks in place.
+- All **13 supplied tests passed unchanged**. Standalone script imports and parser error output were also verified.
