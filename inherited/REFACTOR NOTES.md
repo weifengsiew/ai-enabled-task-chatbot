@@ -230,3 +230,33 @@ Helpers return parsed values or raise `ValueError`. Handlers display expected in
 
 - Added `parse_event()`, `parse_note()`, and `parse_due_date()` and reused them in the corresponding handlers, preserving existing behavior.
 - All **13 supplied tests passed unchanged**. Compared 13 representative cases against the previous handlers, including note whitespace, original number text, and malformed event separators; standalone imports also verified.
+
+## refactor step 13
+
+Extract three parser helpers into `parser.py`:
+
+- `parse_task_number_command(line: str, error_message: str) -> int`: share command splitting, argument-count validation, and `parse_task_index()` between mark/unmark and delete. Preserve their usage messages and keep task-existence checks outside parser.
+- `parse_required_text(text: str, error_message: str) -> str`: share whitespace stripping and empty-argument validation between to-do and find, preserving their different error messages.
+- `parse_deadline(line: str) -> tuple[str, datetime]`: combine deadline-prefix removal, `parse_required_pair()`, and `parse_deadline_datetime()` into one parser entry point returning description and deadline.
+
+Preserve existing behavior and run the supplied tests without modifying them.
+
+### Step 13 results
+
+- Added `parse_task_number_command()`, `parse_required_text()`, and `parse_deadline()` and reused them in the relevant handlers, preserving existing behavior.
+- All **13 supplied tests passed unchanged**. Compared 25 representative cases against the previous handlers; standalone execution also verified.
+
+## refactor step 14
+
+Extract three command wrappers into `parser.py`:
+
+- `parse_recurring(line: str) -> tuple[str, str]`: move prefix removal and the `parse_required_pair()` call from `handle_recurring()` into parser, returning description and interval with the existing usage message.
+- `parse_todo(line: str) -> str`: move prefix removal and the to-do error message into parser, reusing `parse_required_text()` to return a validated description.
+- `parse_find(line: str) -> str`: move prefix removal and the find error message into parser, reusing `parse_required_text()` to return a validated search query.
+
+These wrappers complete responsibility separation rather than remove further duplication. Preserve existing behavior and run the supplied tests without modifying them.
+
+### Step 14 results
+
+- Added `parse_recurring()`, `parse_todo()`, and `parse_find()` and called them from the corresponding handlers, preserving parsing behavior and error messages.
+- All **13 supplied tests passed unchanged**.

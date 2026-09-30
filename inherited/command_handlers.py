@@ -6,12 +6,14 @@ from typing import Any
 
 if __package__:
     from .parser import (
-        parse_deadline_datetime,
+        parse_deadline,
         parse_due_date,
         parse_event,
+        parse_find,
         parse_note,
-        parse_required_pair,
-        parse_task_index,
+        parse_recurring,
+        parse_task_number_command,
+        parse_todo,
     )
     from .storage import save_tasks
     from .ui import (
@@ -26,12 +28,14 @@ if __package__:
     )
 else:
     from parser import (
-        parse_deadline_datetime,
+        parse_deadline,
         parse_due_date,
         parse_event,
+        parse_find,
         parse_note,
-        parse_required_pair,
-        parse_task_index,
+        parse_recurring,
+        parse_task_number_command,
+        parse_todo,
     )
     from storage import save_tasks
     from ui import (
@@ -91,10 +95,11 @@ def handle_todo(line: str, tasks: list[dict[str, Any]], data_file: Path) -> None
         None.
     """
     # Parser: extract the description and check that it is present.
-    description = line[5:].strip()
-    if not description:
-        # Parser / UI: validation detects invalid input; UI displays the input error here.
-        print("A to-do needs something to do.")
+    try:
+        description = parse_todo(line)
+    except ValueError as error:
+        # UI: display the parser's input error.
+        print(str(error))
         return
     # Tasklist: build the task from parsed values and append it to the list.
     task = {"kind": "todo", "description": description, "done": False, "note": ""}
@@ -117,12 +122,8 @@ def handle_deadline(line: str, tasks: list[dict[str, Any]], data_file: Path) -> 
         None.
     """
     # Parser: require a description and /by value, then parse the deadline.
-    rest = line[len("deadline") :].strip()
     try:
-        description, when_text = parse_required_pair(
-            rest, "/by", "A deadline needs something to do and a /by."
-        )
-        parsed = parse_deadline_datetime(when_text)
+        description, parsed = parse_deadline(line)
     except ValueError as error:
         # UI: display the parser's input error.
         print(str(error))
@@ -191,11 +192,8 @@ def handle_recurring(line: str, tasks: list[dict[str, Any]], data_file: Path) ->
         None.
     """
     # Parser: require a description and /every value.
-    rest = line[len("recurring") :].strip()
     try:
-        description, every = parse_required_pair(
-            rest, "/every", "A recurring task needs something to do and an /every."
-        )
+        description, every = parse_recurring(line)
     except ValueError as error:
         # UI: display the parser's input error.
         print(str(error))
@@ -226,24 +224,21 @@ def handle_mark_unmark(line: str, tasks: list[dict[str, Any]], data_file: Path) 
     Returns:
         None.
     """
-    # Parser: split the command and require a task-number argument.
-    pieces = line.split()
-    command = pieces[0]
-    if len(pieces) != 2:
-        # Parser / UI: validation detects invalid input; UI displays the input error here.
-        print(f"Tell me which task to {command}, for example: {command} 2.")
-        return
+    # Parser: identify the command and parse its task-number argument.
+    command = line.split()[0]
     try:
-        # Parser: convert the task number to a zero-based index.
-        index = parse_task_index(pieces[1])
+        index = parse_task_number_command(
+            line, f"Tell me which task to {command}, for example: {command} 2."
+        )
     except ValueError as error:
         # UI: display the parser's input error.
         print(str(error))
         return
     # Tasklist: check that the requested task exists in the current list.
     if index < 0 or index >= len(tasks):
-        # Tasklist / UI: the task lookup fails; UI displays the missing-task error here.
-        print(f"No task {pieces[1]}.")
+        # UI: preserve the task number exactly as entered in the error message.
+        number_text = line.split()[1]
+        print(f"No task {number_text}.")
         return
     # Tasklist: update the selected task's completion state.
     tasks[index]["done"] = command == "mark"
@@ -296,23 +291,20 @@ def handle_delete(line: str, tasks: list[dict[str, Any]], data_file: Path) -> No
     Returns:
         None.
     """
-    # Parser: split the command and require a task-number argument.
-    pieces = line.split()
-    if len(pieces) != 2:
-        # Parser / UI: validation detects invalid input; UI displays the input error here.
-        print("Tell me which task to delete, for example: delete 2.")
-        return
+    # Parser: require and parse a single task-number argument.
     try:
-        # Parser: convert the task number to a zero-based index.
-        index = parse_task_index(pieces[1])
+        index = parse_task_number_command(
+            line, "Tell me which task to delete, for example: delete 2."
+        )
     except ValueError as error:
         # UI: display the parser's input error.
         print(str(error))
         return
     # Tasklist: check that the requested task exists in the current list.
     if index < 0 or index >= len(tasks):
-        # Tasklist / UI: the task lookup fails; UI displays the missing-task error here.
-        print(f"No task {pieces[1]}.")
+        # UI: preserve the task number exactly as entered in the error message.
+        number_text = line.split()[1]
+        print(f"No task {number_text}.")
         return
     # Tasklist: remove the selected task and retain it for the confirmation.
     removed = tasks.pop(index)
@@ -354,10 +346,11 @@ def handle_find(line: str, tasks: list[dict[str, Any]]) -> None:
         None.
     """
     # Parser: extract the search text and check that it is present.
-    query = line[len("find") :].strip()
-    if not query:
-        # Parser / UI: validation detects invalid input; UI displays the input error here.
-        print("Tell me what to find.")
+    try:
+        query = parse_find(line)
+    except ValueError as error:
+        # UI: display the parser's input error.
+        print(str(error))
         return
     # Tasklist: find tasks whose descriptions contain the query, ignoring case.
     matches = [task for task in tasks if query.casefold() in task["description"].casefold()]

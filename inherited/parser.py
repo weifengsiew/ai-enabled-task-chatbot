@@ -122,3 +122,108 @@ def parse_due_date(text: str) -> date:
         return datetime.strptime(text, "%Y-%m-%d").date()
     except ValueError:
         raise ValueError("Use due YYYY-MM-DD.") from None
+
+
+def parse_task_number_command(line: str, error_message: str) -> int:
+    """Parse a command followed by exactly one task-number argument.
+
+    Args:
+        line: Raw command text.
+        error_message: Usage message for an incorrect argument count.
+
+    Returns:
+        The zero-based task index; task existence is checked by the caller.
+
+    Raises:
+        ValueError: If the argument count or task number is invalid.
+    """
+    pieces = line.split()
+    if len(pieces) != 2:
+        raise ValueError(error_message)
+    return parse_task_index(pieces[1])
+
+
+def parse_required_text(text: str, error_message: str) -> str:
+    """Strip surrounding whitespace and require a nonempty argument.
+
+    Args:
+        text: Argument text after the command prefix.
+        error_message: Input-error message for an empty argument.
+
+    Returns:
+        The argument with surrounding whitespace removed.
+
+    Raises:
+        ValueError: If the stripped argument is empty.
+    """
+    value = text.strip()
+    if not value:
+        raise ValueError(error_message)
+    return value
+
+
+def parse_deadline(line: str) -> tuple[str, datetime]:
+    """Parse a deadline command's description and due datetime.
+
+    Args:
+        line: Raw deadline command text.
+
+    Returns:
+        The stripped description and parsed deadline datetime.
+
+    Raises:
+        ValueError: If required arguments are missing or the date is invalid.
+    """
+    rest = line[len("deadline") :].strip()
+    description, when_text = parse_required_pair(
+        rest, "/by", "A deadline needs something to do and a /by."
+    )
+    return description, parse_deadline_datetime(when_text)
+
+
+def parse_recurring(line: str) -> tuple[str, str]:
+    """Parse a recurring command's description and interval.
+
+    Args:
+        line: Raw recurring command text.
+
+    Returns:
+        The description and interval with surrounding whitespace removed.
+
+    Raises:
+        ValueError: If the separator or either required value is missing.
+    """
+    rest = line[len("recurring") :].strip()
+    return parse_required_pair(
+        rest, "/every", "A recurring task needs something to do and an /every."
+    )
+
+
+def parse_todo(line: str) -> str:
+    """Parse a to-do command's required description.
+
+    Args:
+        line: Raw to-do command text.
+
+    Returns:
+        The description with surrounding whitespace removed.
+
+    Raises:
+        ValueError: If the description is empty.
+    """
+    return parse_required_text(line[5:], "A to-do needs something to do.")
+
+
+def parse_find(line: str) -> str:
+    """Parse a find command's required search query.
+
+    Args:
+        line: Raw find command text.
+
+    Returns:
+        The search query with surrounding whitespace removed.
+
+    Raises:
+        ValueError: If the search query is empty.
+    """
+    return parse_required_text(line[len("find") :], "Tell me what to find.")
