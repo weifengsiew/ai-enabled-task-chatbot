@@ -6,10 +6,10 @@ from typing import Any
 
 if __package__:
     from .storage import save_tasks
-    from .ui import format_deadline, format_task
+    from .ui import format_deadline, format_task, show_added
 else:
     from storage import save_tasks
-    from ui import format_deadline, format_task
+    from ui import format_deadline, format_task, show_added
 
 
 def handle_empty_input() -> None:
@@ -79,8 +79,7 @@ def handle_todo(line: str, tasks: list[dict[str, Any]], data_file: Path) -> None
     task = {"kind": "todo", "description": description, "done": False, "note": ""}
     tasks.append(task)
     # UI: display the added task.
-    print("Added:")
-    print(f"  {format_task(task)}")
+    show_added(task)
     # Storage: create the destination directory and save the task list as JSON.
     save_tasks(tasks, data_file)
 
@@ -130,8 +129,7 @@ def handle_deadline(line: str, tasks: list[dict[str, Any]], data_file: Path) -> 
     }
     tasks.append(task)
     # UI: display the added task.
-    print("Added:")
-    print(f"  {format_task(task)}")
+    show_added(task)
     # Storage: create the destination directory and save the task list as JSON.
     save_tasks(tasks, data_file)
 
@@ -171,8 +169,7 @@ def handle_event(line: str, tasks: list[dict[str, Any]], data_file: Path) -> Non
     }
     tasks.append(task)
     # UI: display the added task.
-    print("Added:")
-    print(f"  {format_task(task)}")
+    show_added(task)
     # Storage: create the destination directory and save the task list as JSON.
     save_tasks(tasks, data_file)
 
@@ -210,8 +207,7 @@ def handle_recurring(line: str, tasks: list[dict[str, Any]], data_file: Path) ->
     }
     tasks.append(task)
     # UI: display the added task.
-    print("Added:")
-    print(f"  {format_task(task)}")
+    show_added(task)
     # Storage: create the destination directory and save the task list as JSON.
     save_tasks(tasks, data_file)
 

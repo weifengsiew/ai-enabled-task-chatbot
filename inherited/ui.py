@@ -41,3 +41,16 @@ def format_task(task: dict[str, Any]) -> str:
         )
     else:
         return f'[R][{box}] {task["description"]} (every: {task["every"]})'
+
+
+def show_added(task: dict[str, Any]) -> None:
+    """Print the confirmation and formatted text for an added task.
+
+    Args:
+        task: Added task to display using the shared task formatter.
+
+    Returns:
+        None.
+    """
+    print("Added:")
+    print(f"  {format_task(task)}")

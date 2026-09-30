@@ -145,3 +145,16 @@ Verify the changes with the supplied tests.
 
 - Extracted `format_task()` into `ui.py`, reusing `format_deadline()`, and called it from `handle_list()` and all four add handlers.
 - Existing display formatting is preserved. All **13 supplied tests passed unchanged**.
+
+## refactor step 7
+
+Extract the repeated added-task confirmation from the four add handlers into `show_added(task: dict[str, Any]) -> None` in `ui.py`.
+
+Replace the two-line display blocks with calls to this function. This centralizes the confirmation message and indentation in `ui`, reusing `format_task()`.
+
+Preserve existing output and verify it with the supplied tests.
+
+### Step 7 results
+
+- Extracted `show_added()` into `ui.py` and reused it in all four add handlers, preserving confirmation output.
+- All **13 supplied tests passed unchanged**.
