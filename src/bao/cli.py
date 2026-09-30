@@ -431,6 +431,41 @@ class Tasks:
                 invalid_task_number_message = "There are no tasks yet."
             print(f"No task {task_number}. {invalid_task_number_message}")
 
+    def delete_task(self, user_response: str) -> None:
+        """
+        Removes the specified task and prints it with the remaining task count.
+        Prints guidance if the command or task number is invalid.
+
+        Args:
+        -----
+        user_response (str): A command in the format "delete <number>",
+            where number is the task's position in the list, starting at 1.
+
+        Returns:
+        --------
+        None.
+        """
+        match = re.fullmatch(r"^delete\s+(\d+)$", user_response)
+
+        if match is None:
+            print("Use: delete <number>")
+            return
+
+        task_number = int(match.group(1))
+
+        if 1 <= task_number <= len(self.tasks):
+            task = self.tasks.pop(task_number - 1)
+            print(f"Deleted:\n{task}")
+            remaining = len(self.tasks)
+            label = "task" if remaining == 1 else "tasks"
+            print(f"{remaining} {label} left.")
+        else:
+            if self.tasks:
+                message = f"Choose a number from 1 to {len(self.tasks)}."
+            else:
+                message = "There are no tasks yet."
+            print(f"No task {task_number}. {message}")
+
 def chat() -> None:
     """
     Runs an interactive task-management session with an empty task collection.
@@ -461,12 +496,15 @@ def chat() -> None:
 
         elif user_response.startswith("note"):
             tasks.note_task(user_response)
+
+        elif user_response.startswith("delete"):
+            tasks.delete_task(user_response)
         
         elif user_response.startswith(("todo", "deadline", "event", "recurring")):
             tasks.add_task(user_response)
             
         else:
-            print("Never heard of it. Try: todo, deadline, event, recurring, list, mark, unmark, note, bye.")
+            print("Never heard of it. Try: todo, deadline, event, recurring, list, mark, unmark, note, delete, bye.")
 
 def main() -> None:
     """
