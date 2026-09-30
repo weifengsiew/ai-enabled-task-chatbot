@@ -335,3 +335,12 @@ Keep tasklist `IndexError` handling separate and preserve unexpected exceptions,
 
 - Added `InputError` and `show_error()`, centralized the catch in `run()`, and removed nine handler parsing catches plus the event message comparison. Tasklist error handling remains separate.
 - All **13 supplied tests passed unchanged**. Standalone checks verified 15 expected error cases, continued processing and saved state, and propagation of the unexpected event error.
+
+## refactor step 20
+
+Move three display blocks into `ui.py`: `show_due_tasks(tasks)` for numbered deadlines or the empty-result message, `show_found_tasks(tasks)` for numbered search summaries or the empty-result message, and `show_cleared(removed_count, remaining_count)` for clear confirmation. Reuse existing formatters and `show_tasks_left()`; preserve output and run the supplied tests unchanged.
+
+### Step 20 results
+
+- Added all three UI helpers and replaced the corresponding handler display blocks, preserving output.
+- All **13 supplied tests passed unchanged**.

@@ -27,14 +27,14 @@ if __package__:
         set_note,
     )
     from .ui import (
-        format_task,
-        format_task_summary,
         show_added,
+        show_cleared,
         show_deleted,
+        show_due_tasks,
+        show_found_tasks,
         show_marked,
         show_noted,
         show_tasks,
-        show_tasks_left,
     )
 else:
     from parser import (
@@ -60,14 +60,14 @@ else:
         set_note,
     )
     from ui import (
-        format_task,
-        format_task_summary,
         show_added,
+        show_cleared,
         show_deleted,
+        show_due_tasks,
+        show_found_tasks,
         show_marked,
         show_noted,
         show_tasks,
-        show_tasks_left,
     )
 
 
@@ -297,8 +297,7 @@ def handle_clear(tasks: list[dict[str, Any]], data_file: Path) -> None:
     # Tasklist: remove completed tasks in place and count the removals.
     removed = clear_completed(tasks)
     # UI: display the number removed and the remaining task count.
-    print(f"Cleared {removed} completed tasks.")
-    show_tasks_left(len(tasks))
+    show_cleared(removed, len(tasks))
     # Storage: create the destination directory and save the task list as JSON.
     save_tasks(tasks, data_file)
 
@@ -317,12 +316,8 @@ def handle_find(line: str, tasks: list[dict[str, Any]]) -> None:
     query = parse_find(line)
     # Tasklist: find tasks whose descriptions contain the query, ignoring case.
     matches = find_tasks(tasks, query)
-    # UI: display an empty-result message when the search found no tasks.
-    if not matches:
-        print("No matching tasks.")
-    # UI: number, format, and display the matching tasks.
-    for number, task in enumerate(matches, 1):
-        print(f"{number}.{format_task_summary(task)}")
+    # UI: display matching tasks or the empty-result message.
+    show_found_tasks(matches)
 
 
 def handle_due(line: str, tasks: list[dict[str, Any]]) -> None:
@@ -339,12 +334,8 @@ def handle_due(line: str, tasks: list[dict[str, Any]]) -> None:
     wanted = parse_due(line)
     # Tasklist: select deadlines by their stored due date.
     matches = due_tasks(tasks, wanted)
-    # UI: display an empty-result message when the search found no tasks.
-    if not matches:
-        print("Nothing due that day.")
-    # UI: number, format, and display the matching tasks.
-    for number, task in enumerate(matches, 1):
-        print(f"{number}.{format_task(task)}")
+    # UI: display matching tasks or the empty-result message.
+    show_due_tasks(matches)
 
 
 def handle_unknown_command() -> None:

@@ -151,3 +151,47 @@ def show_error(message: str) -> None:
         None.
     """
     print(message)
+
+
+def show_due_tasks(tasks: list[dict[str, Any]]) -> None:
+    """Print numbered deadlines or the empty due-result message.
+
+    Args:
+        tasks: Matching deadline tasks in display order.
+
+    Returns:
+        None.
+    """
+    if not tasks:
+        print("Nothing due that day.")
+    for number, task in enumerate(tasks, 1):
+        print(f"{number}.{format_task(task)}")
+
+
+def show_found_tasks(tasks: list[dict[str, Any]]) -> None:
+    """Print numbered task summaries or the empty search-result message.
+
+    Args:
+        tasks: Matching tasks in display order.
+
+    Returns:
+        None.
+    """
+    if not tasks:
+        print("No matching tasks.")
+    for number, task in enumerate(tasks, 1):
+        print(f"{number}.{format_task_summary(task)}")
+
+
+def show_cleared(removed_count: int, remaining_count: int) -> None:
+    """Print the completed-task removal count and remaining task count.
+
+    Args:
+        removed_count: Number of completed tasks removed.
+        remaining_count: Number of tasks remaining after clearing.
+
+    Returns:
+        None.
+    """
+    print(f"Cleared {removed_count} completed tasks.")
+    show_tasks_left(remaining_count)
