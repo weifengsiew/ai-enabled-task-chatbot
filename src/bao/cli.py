@@ -84,14 +84,57 @@ class Task:
         str: The task type marker, completion status, and description,
             with timing information and a note when present.
         """
+        return (
+            f"{self._get_type_mark()}"
+            f"{self._get_done_mark()}"
+            f"{self.description}"
+            f"{self._format_time_info()}"
+            f"{self._format_note()}"
+        )
+
+    def _get_type_mark(self) -> str:
+        """
+        Returns the display marker for this task's type.
+
+        Returns:
+        --------
+        str: The type marker, or an empty string for an unrecognized type.
+        """
         task_type_marks = {
             "todo": "[T]",
             "deadline": "[D]",
             "event": "[E]",
             "recurring": "[R]"}
-        task_type_mark = task_type_marks.get(self.task_type, "")
-        done_mark = "[X]" if self.done else "[ ]"
-        note = f"Note: {self.note}" if self.note else ""
+        return task_type_marks.get(self.task_type, "")
+
+    def _get_done_mark(self) -> str:
+        """
+        Returns the display marker for this task's completion status.
+
+        Returns:
+        --------
+        str: "[X]" if complete, otherwise "[ ]".
+        """
+        return "[X]" if self.done else "[ ]"
+
+    def _format_note(self) -> str:
+        """
+        Formats this task's note for display on a separate line.
+
+        Returns:
+        --------
+        str: A leading newline and labeled note, or an empty string if absent.
+        """
+        return f"\nNote: {self.note}" if self.note else ""
+
+    def _format_time_info(self) -> str:
+        """
+        Formats timing information according to this task's type.
+
+        Returns:
+        --------
+        str: The timing text with a leading space, or an empty string if absent.
+        """
 
         time_info = ""
         if self.task_type == "recurring" and self.day:
@@ -101,8 +144,7 @@ class Task:
         elif self.task_type == "event" and self.start and self.end:
             time_info = f" (from: {self.start} to: {self.end})"
 
-        return f"{task_type_mark}{done_mark}{self.description}" + time_info + (
-            f"\n{note}" if note else "") 
+        return time_info
 
 class Tasks:
     def __init__(self) -> None:
@@ -480,8 +522,7 @@ class Tasks:
         task = self.tasks.pop(task_number - 1)
         print(f"Deleted:\n{task}")
         remaining = len(self.tasks)
-        label = "task" if remaining == 1 else "tasks"
-        print(f"{remaining} {label} left.")
+        print(f"{remaining} tasks left.")
 
 def chat() -> None:
     """

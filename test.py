@@ -63,7 +63,7 @@ class ChatTests(unittest.TestCase):
             "Note: attach receipts\n"
             "Deleted:\n"
             "[T][ ]read book\n"
-            "1 task left.\n"
+            "1 tasks left.\n"
             "1. [D][ ]submit report (by: friday)\n"
             "Note: attach receipts\n"
             "That's 1 on your plate.\n"
