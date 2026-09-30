@@ -260,3 +260,18 @@ These wrappers complete responsibility separation rather than remove further dup
 
 - Added `parse_recurring()`, `parse_todo()`, and `parse_find()` and called them from the corresponding handlers, preserving parsing behavior and error messages.
 - All **13 supplied tests passed unchanged**.
+
+## refactor step 15
+
+Extract three command-specific parsing helpers into `parser.py`:
+
+- `parse_due(line: str) -> date`: move due-prefix removal and whitespace stripping into parser, reusing `parse_due_date()`.
+- `parse_delete(line: str) -> int`: wrap `parse_task_number_command()` with delete's existing usage message.
+- `parse_mark_unmark(line: str) -> tuple[str, int]`: move command-name extraction and usage-message construction into parser, reusing `parse_task_number_command()` and returning the command and task index.
+
+Preserve existing behavior and run the supplied tests without modifying them.
+
+### Step 15 results
+
+- Added `parse_due()`, `parse_delete()`, and `parse_mark_unmark()` and called them from the corresponding handlers, preserving parsing behavior and error messages.
+- All **13 supplied tests passed unchanged**.

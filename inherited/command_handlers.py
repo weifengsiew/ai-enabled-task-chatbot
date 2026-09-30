@@ -7,12 +7,13 @@ from typing import Any
 if __package__:
     from .parser import (
         parse_deadline,
-        parse_due_date,
+        parse_delete,
+        parse_due,
         parse_event,
         parse_find,
+        parse_mark_unmark,
         parse_note,
         parse_recurring,
-        parse_task_number_command,
         parse_todo,
     )
     from .storage import save_tasks
@@ -29,12 +30,13 @@ if __package__:
 else:
     from parser import (
         parse_deadline,
-        parse_due_date,
+        parse_delete,
+        parse_due,
         parse_event,
         parse_find,
+        parse_mark_unmark,
         parse_note,
         parse_recurring,
-        parse_task_number_command,
         parse_todo,
     )
     from storage import save_tasks
@@ -225,11 +227,8 @@ def handle_mark_unmark(line: str, tasks: list[dict[str, Any]], data_file: Path) 
         None.
     """
     # Parser: identify the command and parse its task-number argument.
-    command = line.split()[0]
     try:
-        index = parse_task_number_command(
-            line, f"Tell me which task to {command}, for example: {command} 2."
-        )
+        command, index = parse_mark_unmark(line)
     except ValueError as error:
         # UI: display the parser's input error.
         print(str(error))
@@ -293,9 +292,7 @@ def handle_delete(line: str, tasks: list[dict[str, Any]], data_file: Path) -> No
     """
     # Parser: require and parse a single task-number argument.
     try:
-        index = parse_task_number_command(
-            line, "Tell me which task to delete, for example: delete 2."
-        )
+        index = parse_delete(line)
     except ValueError as error:
         # UI: display the parser's input error.
         print(str(error))
@@ -373,9 +370,8 @@ def handle_due(line: str, tasks: list[dict[str, Any]]) -> None:
         None.
     """
     # Parser: extract and validate the requested calendar date.
-    date_text = line[len("due") :].strip()
     try:
-        wanted = parse_due_date(date_text)
+        wanted = parse_due(line)
     except ValueError as error:
         # UI: display the parser's input error.
         print(str(error))

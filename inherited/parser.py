@@ -227,3 +227,56 @@ def parse_find(line: str) -> str:
         ValueError: If the search query is empty.
     """
     return parse_required_text(line[len("find") :], "Tell me what to find.")
+
+
+def parse_due(line: str) -> date:
+    """Parse a due command's calendar date.
+
+    Args:
+        line: Raw due command text.
+
+    Returns:
+        The parsed calendar date.
+
+    Raises:
+        ValueError: If the date is missing or invalid.
+    """
+    date_text = line[len("due") :].strip()
+    return parse_due_date(date_text)
+
+
+def parse_delete(line: str) -> int:
+    """Parse a delete command's task index.
+
+    Args:
+        line: Raw delete command text.
+
+    Returns:
+        The zero-based task index; task existence is checked by the caller.
+
+    Raises:
+        ValueError: If the argument count or task number is invalid.
+    """
+    return parse_task_number_command(
+        line, "Tell me which task to delete, for example: delete 2."
+    )
+
+
+def parse_mark_unmark(line: str) -> tuple[str, int]:
+    """Parse a mark or unmark command and its task index.
+
+    Args:
+        line: Raw mark or unmark command text.
+
+    Returns:
+        The command name and zero-based task index.
+
+    Raises:
+        ValueError: If the argument count or task number is invalid.
+        IndexError: If no command name is supplied, preserving existing behavior.
+    """
+    command = line.split()[0]
+    index = parse_task_number_command(
+        line, f"Tell me which task to {command}, for example: {command} 2."
+    )
+    return command, index
