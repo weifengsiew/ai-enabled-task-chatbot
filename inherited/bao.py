@@ -68,7 +68,7 @@ def run() -> None:
                 command_handlers.handle_event(line, TASKS, DATA_FILE)
             elif line.startswith("recurring"):
                 command_handlers.handle_recurring(line, TASKS, DATA_FILE)
-            elif line.startswith("mark") or line.startswith("unmark"):
+            elif line.startswith(("mark", "unmark")):
                 command_handlers.handle_mark_unmark(line, TASKS, DATA_FILE)
             elif line.startswith("note"):
                 command_handlers.handle_note(line, TASKS, DATA_FILE)

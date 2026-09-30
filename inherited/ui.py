@@ -34,18 +34,17 @@ def format_task(task: dict[str, Any]) -> str:
     """
     box = "X" if task["done"] else " "
     if task["kind"] == "todo":
-        return f'[T][{box}] {task["description"]}'
+        return f"[T][{box}] {task['description']}"
     elif task["kind"] == "deadline":
         due = datetime.fromisoformat(task["when"])
         formatted = format_deadline(due)
-        return f'[D][{box}] {task["description"]} (by: {formatted})'
+        return f"[D][{box}] {task['description']} (by: {formatted})"
     elif task["kind"] == "event":
         return (
-            f'[E][{box}] {task["description"]} '
-            f'(from: {task["from"]} to: {task["to"]})'
+            f"[E][{box}] {task['description']} (from: {task['from']} to: {task['to']})"
         )
     else:
-        return f'[R][{box}] {task["description"]} (every: {task["every"]})'
+        return f"[R][{box}] {task['description']} (every: {task['every']})"
 
 
 def show_added(task: dict[str, Any]) -> None:
@@ -71,7 +70,7 @@ def format_task_summary(task: dict[str, Any]) -> str:
         The completion box and description, without numbering or indentation.
     """
     box = "X" if task["done"] else " "
-    return f'[{box}] {task["description"]}'
+    return f"[{box}] {task['description']}"
 
 
 def show_tasks(tasks: Tasks) -> None:
@@ -89,7 +88,7 @@ def show_tasks(tasks: Tasks) -> None:
         for number, task in enumerate(tasks, 1):
             print(f"{number}.{format_task(task)}")
             if task["note"]:
-                print(f'   Note: {task["note"]}')
+                print(f"   Note: {task['note']}")
 
 
 def show_tasks_left(count: int) -> None:
@@ -127,8 +126,8 @@ def show_noted(task: dict[str, Any]) -> None:
         None.
     """
     print("Noted:")
-    print(f'  {task["description"]}')
-    print(f'  Note: {task["note"]}')
+    print(f"  {task['description']}")
+    print(f"  Note: {task['note']}")
 
 
 def show_deleted(task: dict[str, Any], remaining_count: int) -> None:
@@ -142,7 +141,7 @@ def show_deleted(task: dict[str, Any], remaining_count: int) -> None:
         None.
     """
     print("Deleted:")
-    print(f'  {task["description"]}')
+    print(f"  {task['description']}")
     show_tasks_left(remaining_count)
 
 

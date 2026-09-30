@@ -133,7 +133,9 @@ def test_saves_changes_and_loads_them_on_the_next_run(monkeypatch, capsys):
         ("find", "Tell me what to find"),
     ],
 )
-def test_bad_input_reports_an_error_and_keeps_running(monkeypatch, capsys, command, message):
+def test_bad_input_reports_an_error_and_keeps_running(
+    monkeypatch, capsys, command, message
+):
     output = run_session(monkeypatch, capsys, command, "list", "bye")
 
     assert message in output
