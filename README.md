@@ -21,11 +21,14 @@ before adding Stage 1 behaviour.
 
 ### Test
 
-To run `test.py`, which tests the application in `src/bao/cli.py`, run this from the repository root:
+From the repository root (the `bao` project directory), run the pytest tests for
+`src/bao/cli.py`:
 
 ```bash
-uv run python -m unittest test -v
+uv run pytest
 ```
+
+This runs the tests in `tests/`. Add `-v` to display each test's name and result.
 
 The tests cover valid and invalid commands, plus saving and reloading tasks.
 They use temporary directories, so your saved tasks are not affected.
