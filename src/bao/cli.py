@@ -44,9 +44,9 @@ class Task:
         """
         self.description = description
         self.done = False
-        self.note = None
+        self.note: str | None = None
         self.task_type = task_type
-        self.day = None
+        self.day: str | None = None
         self.start: str | None = None
         self.end: str | None = None
         self.due_date: date | None = None

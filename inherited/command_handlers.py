@@ -1,8 +1,9 @@
 """Command handlers extracted from the inherited Bao input loop."""
 
 from pathlib import Path
+from typing import TYPE_CHECKING
 
-if __package__:
+if TYPE_CHECKING or __package__:
     from .parser import (
         parse_deadline,
         parse_delete,

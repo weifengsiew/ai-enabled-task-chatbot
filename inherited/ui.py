@@ -1,9 +1,9 @@
 """Display formatting for the inherited Bao application."""
 
 from datetime import datetime
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-if __package__:
+if TYPE_CHECKING or __package__:
     from .tasks import Tasks
 else:
     from tasks import Tasks

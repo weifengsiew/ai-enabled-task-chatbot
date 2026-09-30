@@ -2,9 +2,9 @@
 
 from collections.abc import Iterator
 from datetime import date, datetime
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-if __package__:
+if TYPE_CHECKING or __package__:
     from .task import DeadlineTask, EventTask, RecurringTask, TodoTask
 else:
     from task import DeadlineTask, EventTask, RecurringTask, TodoTask

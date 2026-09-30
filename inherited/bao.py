@@ -2,8 +2,9 @@
 
 import json
 from pathlib import Path
+from typing import TYPE_CHECKING
 
-if __package__:
+if TYPE_CHECKING or __package__:
     from . import command_handlers
     from .parser import InputError
     from .storage import load_tasks
