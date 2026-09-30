@@ -23,7 +23,22 @@ DATA_FILE = Path("data/inherited-tasks.json")
 
 
 def run() -> None:
-    """Load saved tasks and process user input until exit; return None."""
+    """Load tasks and run the terminal conversation until the user exits.
+
+    Clears global TASKS and repopulates it from DATA_FILE. Reads terminal input
+    and dispatches commands that may mutate TASKS, print messages, and save JSON.
+    Displays expected input and missing-task errors, then continues the loop.
+    Handles file-read and JSON-decoding errors during loading; unexpected command
+    errors propagate. A save failure does not roll back an in-memory change.
+
+    Returns:
+        None after bye, end-of-input, or a keyboard interrupt while reading input.
+
+    Raises:
+        OSError: If saving task data fails.
+        ValueError: If event separators trigger the preserved unpacking error,
+            or stored deadline data cannot be interpreted.
+    """
     TASKS.clear()
     try:
         TASKS.extend(load_tasks(DATA_FILE))

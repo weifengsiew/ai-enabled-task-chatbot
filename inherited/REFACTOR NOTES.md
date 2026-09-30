@@ -362,3 +362,12 @@ Introduce a shared `Task` dataclass and `TodoTask`, `DeadlineTask`, `EventTask`,
 
 - Added all five task dataclasses and shared dictionary conversion; all four add operations now construct tasks through the models. Existing callers still use dictionaries.
 - All **13 supplied tests passed unchanged**. Verified model conversion, exact saved JSON for every task kind, and standalone execution.
+
+## refactor step 24
+
+Update handler and `run()` docstrings to document propagated exceptions, meaningful side effects, and function-specific parameters. Preserve the existing format and executable code; verify that only documentation changes and run the supplied tests unchanged.
+
+### Step 24 results
+
+- Updated handler and coordinator docstrings with exception contracts, side effects, and specific parameter descriptions.
+- Executable ASTs are unchanged; all **13 supplied tests passed unchanged**.

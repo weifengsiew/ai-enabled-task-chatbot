@@ -99,7 +99,7 @@ def handle_list(tasks: list[dict[str, Any]]) -> None:
     """Display the supplied tasks and their notes.
 
     Args:
-        tasks: Current task list; commands that change tasks mutate it in place.
+        tasks: Task list to display without modifying it.
 
     Returns:
         None.
@@ -111,13 +111,20 @@ def handle_list(tasks: list[dict[str, Any]]) -> None:
 def handle_todo(line: str, tasks: list[dict[str, Any]], data_file: Path) -> None:
     """Parse a to-do command, append its task, display it, and save.
 
+    Updates the supplied list in place, prints confirmation, and saves JSON.
+    A save failure does not roll back the in-memory change.
+
     Args:
-        line: Raw command text to parse.
-        tasks: Current task list; commands that change tasks mutate it in place.
+        line: Raw to-do command containing the description.
+        tasks: Task list to append the new to-do task to in place.
         data_file: Destination for saving the updated task list as JSON.
 
     Returns:
         None.
+
+    Raises:
+        InputError: If the command arguments are invalid.
+        OSError: If the save directory cannot be created or data cannot be written.
     """
     # Parser: extract the description and check that it is present.
     description = parse_todo(line)
@@ -132,13 +139,20 @@ def handle_todo(line: str, tasks: list[dict[str, Any]], data_file: Path) -> None
 def handle_deadline(line: str, tasks: list[dict[str, Any]], data_file: Path) -> None:
     """Parse a deadline command, append its task, display it, and save.
 
+    Updates the supplied list in place, prints confirmation, and saves JSON.
+    A save failure does not roll back the in-memory change.
+
     Args:
-        line: Raw command text to parse.
-        tasks: Current task list; commands that change tasks mutate it in place.
+        line: Raw deadline command containing the description and /by value.
+        tasks: Task list to append the new deadline task to in place.
         data_file: Destination for saving the updated task list as JSON.
 
     Returns:
         None.
+
+    Raises:
+        InputError: If the command arguments are invalid.
+        OSError: If the save directory cannot be created or data cannot be written.
     """
     # Parser: require a description and /by value, then parse the deadline.
     description, parsed = parse_deadline(line)
@@ -153,13 +167,22 @@ def handle_deadline(line: str, tasks: list[dict[str, Any]], data_file: Path) -> 
 def handle_event(line: str, tasks: list[dict[str, Any]], data_file: Path) -> None:
     """Parse an event command, append its task, display it, and save.
 
+    Updates the supplied list in place, prints confirmation, and saves JSON.
+    A save failure does not roll back the in-memory change.
+
     Args:
-        line: Raw command text to parse.
-        tasks: Current task list; commands that change tasks mutate it in place.
+        line: Raw event command containing description, /from, and /to values.
+        tasks: Task list to append the new event task to in place.
         data_file: Destination for saving the updated task list as JSON.
 
     Returns:
         None.
+
+    Raises:
+        InputError: If the command arguments are invalid.
+        ValueError: If /to occurs only before /from, preserving the existing
+            unpacking error.
+        OSError: If the save directory cannot be created or data cannot be written.
     """
     # Parser: extract the description, start, and end from the event command.
     description, start, end = parse_event(line)
@@ -174,13 +197,20 @@ def handle_event(line: str, tasks: list[dict[str, Any]], data_file: Path) -> Non
 def handle_recurring(line: str, tasks: list[dict[str, Any]], data_file: Path) -> None:
     """Parse a recurring command, append its task, display it, and save.
 
+    Updates the supplied list in place, prints confirmation, and saves JSON.
+    A save failure does not roll back the in-memory change.
+
     Args:
-        line: Raw command text to parse.
-        tasks: Current task list; commands that change tasks mutate it in place.
+        line: Raw recurring command containing description and /every value.
+        tasks: Task list to append the new recurring task to in place.
         data_file: Destination for saving the updated task list as JSON.
 
     Returns:
         None.
+
+    Raises:
+        InputError: If the command arguments are invalid.
+        OSError: If the save directory cannot be created or data cannot be written.
     """
     # Parser: require a description and /every value.
     description, every = parse_recurring(line)
@@ -195,13 +225,22 @@ def handle_recurring(line: str, tasks: list[dict[str, Any]], data_file: Path) ->
 def handle_mark_unmark(line: str, tasks: list[dict[str, Any]], data_file: Path) -> None:
     """Parse a mark or unmark command, update its task, display it, and save.
 
+    Updates the supplied list in place, prints confirmation, and saves JSON.
+    A save failure does not roll back the in-memory change.
+
     Args:
-        line: Raw command text to parse.
-        tasks: Current task list; commands that change tasks mutate it in place.
+        line: Raw mark or unmark command containing a task number.
+        tasks: Task list whose selected completion state is updated in place.
         data_file: Destination for saving the updated task list as JSON.
 
     Returns:
         None.
+
+    Raises:
+        InputError: If the command arguments are invalid.
+        TaskNotFoundError: If the requested task does not exist.
+        IndexError: If called directly without a command name.
+        OSError: If the save directory cannot be created or data cannot be written.
     """
     # Parser: identify the command and parse its task-number argument.
     command, index = parse_mark_unmark(line)
@@ -216,13 +255,21 @@ def handle_mark_unmark(line: str, tasks: list[dict[str, Any]], data_file: Path) 
 def handle_note(line: str, tasks: list[dict[str, Any]], data_file: Path) -> None:
     """Parse a note command, replace the task note, display it, and save.
 
+    Updates the supplied list in place, prints confirmation, and saves JSON.
+    A save failure does not roll back the in-memory change.
+
     Args:
-        line: Raw command text to parse.
-        tasks: Current task list; commands that change tasks mutate it in place.
+        line: Raw note command containing a task number and note text.
+        tasks: Task list whose selected note is replaced in place.
         data_file: Destination for saving the updated task list as JSON.
 
     Returns:
         None.
+
+    Raises:
+        InputError: If the command arguments are invalid.
+        TaskNotFoundError: If the requested task does not exist.
+        OSError: If the save directory cannot be created or data cannot be written.
     """
     # Parser: extract the task index and preserve the remaining note text.
     index, note = parse_note(line)
@@ -237,13 +284,21 @@ def handle_note(line: str, tasks: list[dict[str, Any]], data_file: Path) -> None
 def handle_delete(line: str, tasks: list[dict[str, Any]], data_file: Path) -> None:
     """Parse a delete command, remove its task, display the result, and save.
 
+    Updates the supplied list in place, prints confirmation, and saves JSON.
+    A save failure does not roll back the in-memory change.
+
     Args:
-        line: Raw command text to parse.
-        tasks: Current task list; commands that change tasks mutate it in place.
+        line: Raw delete command containing a task number.
+        tasks: Task list to remove the selected task from in place.
         data_file: Destination for saving the updated task list as JSON.
 
     Returns:
         None.
+
+    Raises:
+        InputError: If the command arguments are invalid.
+        TaskNotFoundError: If the requested task does not exist.
+        OSError: If the save directory cannot be created or data cannot be written.
     """
     # Parser: require and parse a single task-number argument.
     index = parse_delete(line)
@@ -258,12 +313,18 @@ def handle_delete(line: str, tasks: list[dict[str, Any]], data_file: Path) -> No
 def handle_clear(tasks: list[dict[str, Any]], data_file: Path) -> None:
     """Remove completed tasks, display the result, and save.
 
+    Updates the supplied list in place, prints confirmation, and saves JSON.
+    A save failure does not roll back the in-memory change.
+
     Args:
-        tasks: Current task list; commands that change tasks mutate it in place.
+        tasks: Task list to remove completed tasks from in place.
         data_file: Destination for saving the updated task list as JSON.
 
     Returns:
         None.
+
+    Raises:
+        OSError: If the save directory cannot be created or data cannot be written.
     """
     # Tasklist: remove completed tasks in place and count the removals.
     removed = clear_completed(tasks)
@@ -277,11 +338,14 @@ def handle_find(line: str, tasks: list[dict[str, Any]]) -> None:
     """Parse a search command and display matching task descriptions.
 
     Args:
-        line: Raw command text to parse.
-        tasks: Current task list; commands that change tasks mutate it in place.
+        line: Raw find command containing the search query.
+        tasks: Task list to search without modifying it.
 
     Returns:
         None.
+
+    Raises:
+        InputError: If the command arguments are invalid.
     """
     # Parser: extract the search text and check that it is present.
     query = parse_find(line)
@@ -295,11 +359,14 @@ def handle_due(line: str, tasks: list[dict[str, Any]]) -> None:
     """Parse a date query and display deadlines due that day.
 
     Args:
-        line: Raw command text to parse.
-        tasks: Current task list; commands that change tasks mutate it in place.
+        line: Raw due command containing the requested calendar date.
+        tasks: Task list to filter by deadline date without modifying it.
 
     Returns:
         None.
+
+    Raises:
+        InputError: If the command arguments are invalid.
     """
     # Parser: extract and validate the requested calendar date.
     wanted = parse_due(line)
