@@ -6,8 +6,10 @@ from typing import Any
 
 if __package__:
     from .storage import save_tasks
+    from .ui import format_deadline
 else:
     from storage import save_tasks
+    from ui import format_deadline
 
 
 def handle_empty_input() -> None:
@@ -55,12 +57,7 @@ def handle_list(tasks: list[dict[str, Any]]) -> None:
             elif task["kind"] == "deadline":
                 # UI: convert the stored date for display, not command parsing.
                 due = datetime.fromisoformat(task["when"])
-                if due.hour == 0 and due.minute == 0:
-                    formatted = due.strftime("%b %d %Y")
-                else:
-                    formatted = due.strftime("%b %d %Y, ") + due.strftime("%I%p").lstrip(
-                        "0"
-                    ).lower()
+                formatted = format_deadline(due)
                 display = f'[D][{box}] {task["description"]} (by: {formatted})'
             elif task["kind"] == "event":
                 display = (
@@ -147,12 +144,7 @@ def handle_deadline(line: str, tasks: list[dict[str, Any]], data_file: Path) -> 
     }
     tasks.append(task)
     # UI: format the deadline date and optional time for the confirmation.
-    if parsed.hour == 0 and parsed.minute == 0:
-        formatted = parsed.strftime("%b %d %Y")
-    else:
-        formatted = parsed.strftime("%b %d %Y, ") + parsed.strftime("%I%p").lstrip(
-            "0"
-        ).lower()
+    formatted = format_deadline(parsed)
     # UI: display the added task.
     print("Added:")
     print(f"  [D][ ] {description} (by: {formatted})")
@@ -437,12 +429,7 @@ def handle_due(line: str, tasks: list[dict[str, Any]]) -> None:
     # UI: number, format, and display the matching tasks.
     for number, task in enumerate(matches, 1):
         due = datetime.fromisoformat(task["when"])
-        if due.hour == 0 and due.minute == 0:
-            formatted = due.strftime("%b %d %Y")
-        else:
-            formatted = due.strftime("%b %d %Y, ") + due.strftime("%I%p").lstrip(
-                "0"
-            ).lower()
+        formatted = format_deadline(due)
         box = "X" if task["done"] else " "
         print(f'{number}.[D][{box}] {task["description"]} (by: {formatted})')
 

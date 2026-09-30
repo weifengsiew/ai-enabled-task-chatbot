@@ -119,3 +119,16 @@ Preserve existing behavior and verify it with the supplied tests.
 
 - Extracted `load_tasks()` into `storage.py`; `bao.py` retains task-list updates and error messages.
 - All **13 supplied tests passed unchanged**. Missing-file handling, error propagation, and standalone script error display were also verified.
+
+## refactor step 5
+
+Extract the repeated deadline date-and-time formatting from `handle_list()`, `handle_deadline()`, and `handle_due()` into `format_deadline(when: datetime) -> str` in `ui.py`.
+
+Replace the three formatting blocks with calls to this function. This centralizes display formatting in `ui` and keeps deadline dates consistent.
+
+Preserve the existing display format and verify it with the supplied tests.
+
+### Step 5 results
+
+- Extracted `format_deadline()` into `ui.py` and reused it in all three handlers, preserving the display format.
+- All **13 supplied tests passed unchanged**. Standalone script formatting was also verified.
