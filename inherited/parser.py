@@ -63,7 +63,8 @@ def parse_deadline_datetime(text: str) -> datetime:
     """
     for pattern in ("%Y-%m-%d %H%M", "%Y-%m-%d"):
         try:
-            return datetime.strptime(text, pattern)
+            # Deadlines represent local wall-clock values without a timezone.
+            return datetime.strptime(text, pattern)  # noqa: DTZ007
         except ValueError:
             pass
     raise InputError("Use YYYY-MM-DD with an optional four-digit time.")
@@ -124,7 +125,8 @@ def parse_due_date(text: str) -> date:
         InputError: If the date text cannot be parsed.
     """
     try:
-        return datetime.strptime(text, "%Y-%m-%d").date()
+        # Only the calendar date is used.
+        return datetime.strptime(text, "%Y-%m-%d").date()  # noqa: DTZ007
     except ValueError:
         raise InputError("Use due YYYY-MM-DD.") from None
 

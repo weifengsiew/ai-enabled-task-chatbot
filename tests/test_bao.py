@@ -55,12 +55,12 @@ def test_adding_and_listing(capsys: pytest.CaptureFixture[str]) -> None:
          "Added:\n[R][ ]water plants (every: sunday)\n"),
         # listing
         ("list",
-         "1. [T][ ]read paper\n"
+         ("1. [T][ ]read paper\n"
          "2. [D][ ]renew licence (by: Mar 01 2026)\n"
          "3. [D][ ]submit Paper (by: Mar 01 2026, 6pm)\n"
          "4. [E][ ]meeting (from: 2026-03-01 to: 2026-03-02)\n"
          "5. [R][ ]water plants (every: sunday)\n"
-         "That's 5 on your plate.\n"),
+         "That's 5 on your plate.\n")),
     ])
 
 
@@ -101,10 +101,10 @@ def test_marking_unmarking_noting_and_deleting(capsys: pytest.CaptureFixture[str
          "Deleted:\n[T][ ]read paper\n2 tasks left.\n"),
         # deletion and renumbering
         ("list",
-         "1. [D][ ]renew licence (by: Mar 01 2026)\n"
+         ("1. [D][ ]renew licence (by: Mar 01 2026)\n"
          "Note: attach receipts\n"
          "2. [D][X]submit Paper (by: Mar 01 2026, 6pm)\n"
-         "That's 1 on your plate.\n"),
+         "That's 1 on your plate.\n")),
     ])
 
 
@@ -216,13 +216,13 @@ def test_saving_and_loading(capsys: pytest.CaptureFixture[str]) -> None:
     steps = [
         # loading saved tasks
         ("list",
-         "1. [T][ ]read book\n"
+         ("1. [T][ ]read book\n"
          "2. [D][ ]submit report (by: Mar 02 2026)\n"
          "Note: attach receipts\n"
          "3. [D][X]send slides (by: Mar 01 2026, 9pm)\n"
          "4. [E][ ]meeting (from: monday to: tuesday)\n"
          "5. [R][ ]water plants (every: sunday)\n"
-         "That's 4 on your plate.\n"),
+         "That's 4 on your plate.\n")),
         # `due` after loading
         ("due 2026-03-01",
          "1. [D][X]send slides (by: Mar 01 2026, 9pm)\n"),
@@ -258,9 +258,9 @@ def test_deadline_parsing_and_due(capsys: pytest.CaptureFixture[str]) -> None:
     _assert_session(capsys, [
         # `due` matches
         ("due 2026-03-01",
-         "1. [D][ ]renew licence (by: Mar 01 2026)\n"
+         ("1. [D][ ]renew licence (by: Mar 01 2026)\n"
          "Note: attach receipts\n"
-         "2. [D][X]submit Paper (by: Mar 01 2026, 6pm)\n"),
+         "2. [D][X]submit Paper (by: Mar 01 2026, 6pm)\n")),
         # `due` without matches
         ("due 2026-03-02",
          "No deadlines due on 2026-03-02.\n"),

@@ -1,8 +1,9 @@
 """Command-line entry point for bao."""
 import json
-from datetime import date, datetime, time
 import re
+from datetime import date, time
 from pathlib import Path
+
 
 def greeting() -> None:
     """
@@ -386,7 +387,7 @@ class Tasks:
                 due_date = date.fromisoformat(deadline_match.group(1))
                 time_text = deadline_match.group(2)
                 due_time = (
-                    datetime.strptime(time_text, "%H%M").time()
+                    time(hour=int(time_text[:2]), minute=int(time_text[2:]))
                     if time_text is not None
                     else None
                 )
