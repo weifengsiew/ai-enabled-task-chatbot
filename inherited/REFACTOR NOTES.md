@@ -132,3 +132,16 @@ Preserve the existing display format and verify it with the supplied tests.
 
 - Extracted `format_deadline()` into `ui.py` and reused it in all three handlers, preserving the display format.
 - All **13 supplied tests passed unchanged**. Standalone script formatting was also verified.
+
+## refactor step 6
+
+Extract repeated task formatting from `handle_list()` and the four add handlers into `format_task(task: dict[str, Any]) -> str` in `ui.py`. Reuse `format_deadline()` for deadline dates.
+
+Replace the formatting blocks with calls to this function, centralizing how each task kind is displayed. Preserve existing numbering, indentation, messages, and notes.
+
+Verify the changes with the supplied tests.
+
+### Step 6 results
+
+- Extracted `format_task()` into `ui.py`, reusing `format_deadline()`, and called it from `handle_list()` and all four add handlers.
+- Existing display formatting is preserved. All **13 supplied tests passed unchanged**.
