@@ -17,6 +17,7 @@ if __package__:
         parse_todo,
     )
     from .storage import save_tasks
+    from .tasklist import clear_completed, find_tasks, validate_task_index
     from .ui import (
         format_task,
         format_task_summary,
@@ -40,6 +41,7 @@ else:
         parse_todo,
     )
     from storage import save_tasks
+    from tasklist import clear_completed, find_tasks, validate_task_index
     from ui import (
         format_task,
         format_task_summary,
@@ -234,7 +236,9 @@ def handle_mark_unmark(line: str, tasks: list[dict[str, Any]], data_file: Path) 
         print(str(error))
         return
     # Tasklist: check that the requested task exists in the current list.
-    if index < 0 or index >= len(tasks):
+    try:
+        validate_task_index(tasks, index)
+    except IndexError:
         # UI: preserve the task number exactly as entered in the error message.
         number_text = line.split()[1]
         print(f"No task {number_text}.")
@@ -266,7 +270,9 @@ def handle_note(line: str, tasks: list[dict[str, Any]], data_file: Path) -> None
         print(str(error))
         return
     # Tasklist: check that the requested task exists in the current list.
-    if index < 0 or index >= len(tasks):
+    try:
+        validate_task_index(tasks, index)
+    except IndexError:
         # UI: preserve the task number exactly as entered in the error message.
         number_text = line.split(maxsplit=2)[1]
         print(f"No task {number_text}.")
@@ -298,7 +304,9 @@ def handle_delete(line: str, tasks: list[dict[str, Any]], data_file: Path) -> No
         print(str(error))
         return
     # Tasklist: check that the requested task exists in the current list.
-    if index < 0 or index >= len(tasks):
+    try:
+        validate_task_index(tasks, index)
+    except IndexError:
         # UI: preserve the task number exactly as entered in the error message.
         number_text = line.split()[1]
         print(f"No task {number_text}.")
@@ -322,9 +330,7 @@ def handle_clear(tasks: list[dict[str, Any]], data_file: Path) -> None:
         None.
     """
     # Tasklist: remove completed tasks in place and count the removals.
-    before = len(tasks)
-    tasks[:] = [task for task in tasks if not task["done"]]
-    removed = before - len(tasks)
+    removed = clear_completed(tasks)
     # UI: display the number removed and the remaining task count.
     print(f"Cleared {removed} completed tasks.")
     show_tasks_left(len(tasks))
@@ -350,7 +356,7 @@ def handle_find(line: str, tasks: list[dict[str, Any]]) -> None:
         print(str(error))
         return
     # Tasklist: find tasks whose descriptions contain the query, ignoring case.
-    matches = [task for task in tasks if query.casefold() in task["description"].casefold()]
+    matches = find_tasks(tasks, query)
     # UI: display an empty-result message when the search found no tasks.
     if not matches:
         print("No matching tasks.")

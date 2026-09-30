@@ -275,3 +275,18 @@ Preserve existing behavior and run the supplied tests without modifying them.
 
 - Added `parse_due()`, `parse_delete()`, and `parse_mark_unmark()` and called them from the corresponding handlers, preserving parsing behavior and error messages.
 - All **13 supplied tests passed unchanged**.
+
+## refactor step 16
+
+Extract three task-list operations into a new `tasklist.py`:
+
+- `validate_task_index(tasks: list[dict[str, Any]], index: int) -> None`: share bounds checking between mark/unmark, note, and delete, raising `IndexError` for an invalid index. Handlers retain the existing missing-task message and original number text.
+- `clear_completed(tasks: list[dict[str, Any]]) -> int`: remove completed tasks in place and return the number removed, leaving display and saving in the handler.
+- `find_tasks(tasks: list[dict[str, Any]], query: str) -> list[dict[str, Any]]`: return case-insensitive description matches in their existing order, leaving display in the handler.
+
+Preserve existing behavior and run the supplied tests without modifying them.
+
+### Step 16 results
+
+- Added `validate_task_index()`, `clear_completed()`, and `find_tasks()` to `tasklist.py` and reused them in the relevant handlers, preserving existing behavior.
+- All **13 supplied tests passed unchanged**. Standalone task-list operations and exact output were also verified.
