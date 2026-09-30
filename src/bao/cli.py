@@ -1,4 +1,5 @@
 """Command-line entry point for bao."""
+from datetime import date, datetime, time
 import re
 
 def greeting() -> None:
@@ -24,7 +25,7 @@ def farewell() -> None:
 class Task:
     def __init__(self, description: str, task_type: str) -> None:
         """
-        Initializes an incomplete task with no note or day assigned.
+        Initializes an incomplete task with no note or timing assigned.
 
         Args:
         -----
@@ -40,6 +41,8 @@ class Task:
         self.note = None
         self.task_type = task_type
         self.day = None
+        self.due_date: date | None = None
+        self.due_time: time | None = None
 
     def mark_done(self) -> None:
         """
@@ -139,8 +142,20 @@ class Task:
         time_info = ""
         if self.task_type == "recurring" and self.day:
             time_info = f" (every: {self.day})"
-        elif self.task_type == "deadline" and self.day:
-            time_info = f" (by: {self.day})"
+        elif self.task_type == "deadline" and self.due_date is not None:
+            deadline_text = self.due_date.strftime("%b %d %Y")
+
+            if self.due_time is not None:
+                hour = self.due_time.hour % 12 or 12
+                minute = (
+                    f":{self.due_time.minute:02d}"
+                    if self.due_time.minute
+                    else ""
+                )
+                period = "am" if self.due_time.hour < 12 else "pm"
+                deadline_text += f", {hour}{minute}{period}"
+
+            time_info = f" (by: {deadline_text})"
         elif self.task_type == "event" and self.start and self.end:
             time_info = f" (from: {self.start} to: {self.end})"
 
@@ -158,7 +173,7 @@ class Tasks:
         self.tasks: list[Task] = []
 
     @staticmethod
-    def _match_command(
+    def _match_user_response(
         user_response: str,
         pattern: str,
         usage: str,
@@ -178,10 +193,10 @@ class Tasks:
         re.Match[str] | None: The match containing captured fields,
             or None if the command does not match.
         """
-        match = re.fullmatch(pattern, user_response)
-        if match is None:
+        user_response_match = re.fullmatch(pattern, user_response)
+        if user_response_match is None:
             print(usage)
-        return match
+        return user_response_match
 
     def _check_task_number(self, task_number: int) -> bool:
         """
@@ -235,16 +250,16 @@ class Tasks:
         --------
         None.
         """
-        match = self._match_command(
+        user_response_match = self._match_user_response(
             user_response,
             r"^todo\s+(.+)$",
             "Use: todo <description>",
         )
 
-        if match is None:
+        if user_response_match is None:
             return
 
-        description = match.group(1)
+        description = user_response_match.group(1)
 
         task = Task(description, "todo")
         self._append_task(task)
@@ -263,51 +278,96 @@ class Tasks:
         --------
         None.
         """
-        match = self._match_command(
+        user_response_match = self._match_user_response(
             user_response,
             r"^recurring\s+(.+?)\s+/every\s+(\w+)$",
             "Use: recurring <description> /every <day>",
         )
 
-        if match is None:
+        if user_response_match is None:
             return
 
-        description = match.group(1)
-        day = match.group(2)
+        description = user_response_match.group(1)
+        day = user_response_match.group(2)
 
         task = Task(description, "recurring")
         task.day = day
 
         self._append_task(task)
 
+    @staticmethod
+    def _parse_deadline(value: str) -> tuple[date, time | None] | None:
+        """
+        Converts deadline text into a date and optional time.
+        Prints guidance if the format or value is invalid.
+
+        Args:
+        -----
+        value (str): A date as YYYY-MM-DD, optionally followed by HHMM.
+
+        Returns:
+        --------
+        tuple[date, time | None] | None: The parsed date and optional time,
+            or None if invalid.
+        """
+        deadline_match = re.fullmatch(
+            r"([0-9]{4}-[0-9]{2}-[0-9]{2})(?:\s+([0-9]{4}))?",
+            value,
+        )
+
+        if deadline_match is not None:
+            try:
+                due_date = date.fromisoformat(deadline_match.group(1))
+                time_text = deadline_match.group(2)
+                due_time = (
+                    datetime.strptime(time_text, "%H%M").time()
+                    if time_text is not None
+                    else None
+                )
+                return due_date, due_time
+            except ValueError:
+                pass
+
+        print(
+            "Invalid deadline. Use a valid date as YYYY-MM-DD, "
+            "optionally followed by a time as HHMM (0000–2359)."
+        )
+        return None
+
     def _add_deadline_task(self, user_response: str) -> None:
         """
         Creates and adds a deadline task from command text.
-        Prints confirmation on success, or usage guidance for invalid input.
+        Prints confirmation on success, or guidance for invalid input.
 
         Args:
         -----
         user_response (str): A command in the format
-            "deadline <description> /by <day>".
+            "deadline <description> /by YYYY-MM-DD [HHMM]".
 
         Returns:
         --------
         None.
         """
-        match = self._match_command(
+        user_response_match = self._match_user_response(
             user_response,
-            r"^deadline\s+(.+?)\s+/by\s+(\w+)$",
-            "Use: deadline <description> /by <day>",
+            r"^deadline\s+(.+?)\s+/by\s+(.+)$",
+            "Use: deadline <description> /by YYYY-MM-DD [HHMM]",
         )
 
-        if match is None:
+        if user_response_match is None:
             return
 
-        description = match.group(1)
-        day = match.group(2)
+        description = user_response_match.group(1)
+        parsed_deadline = self._parse_deadline(user_response_match.group(2))
+
+        if parsed_deadline is None:
+            return
+
+        due_date, due_time = parsed_deadline
 
         task = Task(description, "deadline")
-        task.day = day
+        task.due_date = due_date
+        task.due_time = due_time
 
         self._append_task(task)
 
@@ -325,18 +385,18 @@ class Tasks:
         --------
         None.
         """
-        match = self._match_command(
+        user_response_match = self._match_user_response(
             user_response,
             r"^event\s+(.+?)\s+/from\s+(.+?)\s+/to\s+(.+)$",
             "Use: event <description> /from <start> /to <end>",
         )
 
-        if match is None:
+        if user_response_match is None:
             return
 
-        description = match.group(1)
-        start = match.group(2)
-        end = match.group(3)
+        description = user_response_match.group(1)
+        start = user_response_match.group(2)
+        end = user_response_match.group(3)
 
         task = Task(description, "event")
         task.start = start
@@ -375,7 +435,7 @@ class Tasks:
             print(
                 "Use:\n"
                 "  todo <description>\n"
-                "  deadline <description> /by <day>\n"
+                "  deadline <description> /by YYYY-MM-DD [HHMM]\n"
                 "  event <description> /from <start> /to <end>\n"
                 "  recurring <description> /every <day>")
 
@@ -394,6 +454,47 @@ class Tasks:
         undone_task_count = sum(1 for task in self.tasks if not task.done)
         print(f"That's {undone_task_count} on your plate.")
 
+    def list_due_tasks(self, user_response: str) -> None:
+        """
+        Prints deadlines due on the requested date, numbered from 1.
+        Includes completed tasks and ignores deadline times.
+        Prints guidance for invalid input or a message if nothing matches.
+
+        Args:
+        -----
+        user_response (str): A command in the format "due YYYY-MM-DD".
+
+        Returns:
+        --------
+        None.
+        """
+        user_response_match = self._match_user_response(
+            user_response,
+            r"^due\s+([0-9]{4}-[0-9]{2}-[0-9]{2})$",
+            "Use: due YYYY-MM-DD",
+        )
+
+        if user_response_match is None:
+            return
+
+        try:
+            query_date = date.fromisoformat(user_response_match.group(1))
+        except ValueError:
+            print("Invalid date. Use a valid calendar date as YYYY-MM-DD.")
+            return
+
+        matching_tasks = [
+            task for task in self.tasks
+            if task.task_type == "deadline" and task.due_date == query_date
+        ]
+
+        if not matching_tasks:
+            print(f"No deadlines due on {query_date}.")
+            return
+
+        for i, task in enumerate(matching_tasks, start=1):
+            print(f"{i}. {task}")
+
     def mark_task(self, user_response: str) -> None:
         """
         Marks the specified task as complete and prints confirmation.
@@ -408,16 +509,16 @@ class Tasks:
         --------
         None.
         """
-        match = self._match_command(
+        user_response_match = self._match_user_response(
             user_response,
             r"^mark\s+(\d+)$",
             "Use: mark <number>",
         )
 
-        if match is None:
+        if user_response_match is None:
             return
 
-        task_number = int(match.group(1))
+        task_number = int(user_response_match.group(1))
 
         if not self._check_task_number(task_number):
             return
@@ -440,16 +541,16 @@ class Tasks:
         --------
         None.
         """
-        match = self._match_command(
+        user_response_match = self._match_user_response(
             user_response,
             r"^unmark\s+(\d+)$",
             "Use: unmark <number>",
         )
 
-        if match is None:
+        if user_response_match is None:
             return
 
-        task_number = int(match.group(1))
+        task_number = int(user_response_match.group(1))
 
         if not self._check_task_number(task_number):
             return
@@ -472,17 +573,17 @@ class Tasks:
         --------
         None.
         """
-        match = self._match_command(
+        user_response_match = self._match_user_response(
             user_response,
             r"^note\s+(\d+)\s+(.+)$",
             "Use: note <number> <note>",
         )
 
-        if match is None:
+        if user_response_match is None:
             return
 
-        task_number = int(match.group(1))
-        note = match.group(2)
+        task_number = int(user_response_match.group(1))
+        note = user_response_match.group(2)
 
         if not self._check_task_number(task_number):
             return
@@ -505,16 +606,16 @@ class Tasks:
         --------
         None.
         """
-        match = self._match_command(
+        user_response_match = self._match_user_response(
             user_response,
             r"^delete\s+(\d+)$",
             "Use: delete <number>",
         )
 
-        if match is None:
+        if user_response_match is None:
             return
 
-        task_number = int(match.group(1))
+        task_number = int(user_response_match.group(1))
 
         if not self._check_task_number(task_number):
             return
@@ -546,6 +647,9 @@ def chat() -> None:
         elif user_response == "list":
             tasks.list_tasks()
 
+        elif user_response.startswith("due"):
+            tasks.list_due_tasks(user_response)
+
         elif user_response.startswith("mark"):
             tasks.mark_task(user_response)
 
@@ -562,7 +666,7 @@ def chat() -> None:
             tasks.add_task(user_response)
             
         else:
-            print("Never heard of it. Try: todo, deadline, event, recurring, list, mark, unmark, note, delete, bye.")
+            print("Never heard of it. Try: todo, deadline, event, recurring, list, due, mark, unmark, note, delete, bye.")
 
 def main() -> None:
     """
