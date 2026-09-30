@@ -353,3 +353,12 @@ Define `TaskNotFoundError(IndexError)` in `tasklist.py` and raise it for invalid
 
 - Added `TaskNotFoundError`, centralized its catch in `run()`, and removed three handler catches.
 - All **13 supplied tests passed unchanged**. Verified original number text, continued processing, no save on failure, and propagation of unrelated `IndexError`s.
+
+## refactor step 22
+
+Introduce a shared `Task` dataclass and `TodoTask`, `DeadlineTask`, `EventTask`, and `RecurringTask` subclasses in `tasks.py`. Centralize shared defaults and kind-specific fields; use `to_dict()` to preserve existing JSON keys, key order, and date format. Route all four task-creation operations through tasklist. This first migration stage keeps dictionary-based callers; using objects throughout and converting at the storage boundary remains a later stage. Run the supplied tests unchanged.
+
+### Step 22 results
+
+- Added all five task dataclasses and shared dictionary conversion; all four add operations now construct tasks through the models. Existing callers still use dictionaries.
+- All **13 supplied tests passed unchanged**. Verified model conversion, exact saved JSON for every task kind, and standalone execution.

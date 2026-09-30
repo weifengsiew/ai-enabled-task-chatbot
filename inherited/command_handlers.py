@@ -18,6 +18,8 @@ if __package__:
     from .storage import save_tasks
     from .tasklist import (
         add_deadline,
+        add_event,
+        add_recurring,
         add_todo,
         clear_completed,
         delete_task,
@@ -51,6 +53,8 @@ else:
     from storage import save_tasks
     from tasklist import (
         add_deadline,
+        add_event,
+        add_recurring,
         add_todo,
         clear_completed,
         delete_task,
@@ -160,15 +164,7 @@ def handle_event(line: str, tasks: list[dict[str, Any]], data_file: Path) -> Non
     # Parser: extract the description, start, and end from the event command.
     description, start, end = parse_event(line)
     # Tasklist: build the task from parsed values and append it to the list.
-    task = {
-        "kind": "event",
-        "description": description,
-        "done": False,
-        "note": "",
-        "from": start,
-        "to": end,
-    }
-    tasks.append(task)
+    task = add_event(tasks, description, start, end)
     # UI: display the added task.
     show_added(task)
     # Storage: create the destination directory and save the task list as JSON.
@@ -189,14 +185,7 @@ def handle_recurring(line: str, tasks: list[dict[str, Any]], data_file: Path) ->
     # Parser: require a description and /every value.
     description, every = parse_recurring(line)
     # Tasklist: build the task from parsed values and append it to the list.
-    task = {
-        "kind": "recurring",
-        "description": description,
-        "done": False,
-        "note": "",
-        "every": every,
-    }
-    tasks.append(task)
+    task = add_recurring(tasks, description, every)
     # UI: display the added task.
     show_added(task)
     # Storage: create the destination directory and save the task list as JSON.

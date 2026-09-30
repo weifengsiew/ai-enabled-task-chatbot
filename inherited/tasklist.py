@@ -3,6 +3,11 @@
 from datetime import date, datetime
 from typing import Any
 
+if __package__:
+    from .tasks import DeadlineTask, EventTask, RecurringTask, TodoTask
+else:
+    from tasks import DeadlineTask, EventTask, RecurringTask, TodoTask
+
 
 class TaskNotFoundError(IndexError):
     """The requested task index is outside the current task list."""
@@ -133,7 +138,7 @@ def add_todo(tasks: list[dict[str, Any]], description: str) -> dict[str, Any]:
     Returns:
         The appended task, initially incomplete with an empty note.
     """
-    task = {"kind": "todo", "description": description, "done": False, "note": ""}
+    task = TodoTask(description=description).to_dict()
     tasks.append(task)
     return task
 
@@ -151,12 +156,43 @@ def add_deadline(
     Returns:
         The appended task, initially incomplete with an empty note.
     """
-    task = {
-        "kind": "deadline",
-        "description": description,
-        "done": False,
-        "note": "",
-        "when": when.isoformat(),
-    }
+    task = DeadlineTask(description=description, when=when).to_dict()
+    tasks.append(task)
+    return task
+
+
+def add_event(
+    tasks: list[dict[str, Any]], description: str, start: str, end: str
+) -> dict[str, Any]:
+    """Construct an event task and append its dictionary to the list in place.
+
+    Args:
+        tasks: Task list to mutate.
+        description: Parsed task description.
+        start: Parsed event start text.
+        end: Parsed event end text.
+
+    Returns:
+        The appended task, initially incomplete with an empty note.
+    """
+    task = EventTask(description=description, start=start, end=end).to_dict()
+    tasks.append(task)
+    return task
+
+
+def add_recurring(
+    tasks: list[dict[str, Any]], description: str, every: str
+) -> dict[str, Any]:
+    """Construct a recurring task and append its dictionary to the list in place.
+
+    Args:
+        tasks: Task list to mutate.
+        description: Parsed task description.
+        every: Parsed recurrence interval text.
+
+    Returns:
+        The appended task, initially incomplete with an empty note.
+    """
+    task = RecurringTask(description=description, every=every).to_dict()
     tasks.append(task)
     return task
