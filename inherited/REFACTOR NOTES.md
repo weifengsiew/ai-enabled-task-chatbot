@@ -215,3 +215,18 @@ Helpers return parsed values or raise `ValueError` with the existing input-error
 
 - Added all three helpers to `parser.py` and reused them in the relevant handlers, preserving input errors and leaving task-existence checks in place.
 - All **13 supplied tests passed unchanged**. Standalone script imports and parser error output were also verified.
+
+## refactor step 12
+
+Extract three parsing blocks into `parser.py`:
+
+- `parse_event(line: str) -> tuple[str, str, str]`: move event separator checks, splitting, whitespace stripping, and required-value validation out of `handle_event()`, returning description, start, and end.
+- `parse_note(line: str) -> tuple[int, str]`: move note argument validation and task-number parsing out of `handle_note()`, reusing `parse_task_index()` and preserving note whitespace with `split(maxsplit=2)`.
+- `parse_due_date(text: str) -> date`: move due-date conversion out of `handle_due()`, preserving the existing input-error message and leaving deadline selection in the handler.
+
+Helpers return parsed values or raise `ValueError`. Handlers display expected input errors. Preserve existing behavior, including the uncaught event error for incorrectly ordered separators and the original number text in missing-task errors. Run the supplied tests without modifying them.
+
+### Step 12 results
+
+- Added `parse_event()`, `parse_note()`, and `parse_due_date()` and reused them in the corresponding handlers, preserving existing behavior.
+- All **13 supplied tests passed unchanged**. Compared 13 representative cases against the previous handlers, including note whitespace, original number text, and malformed event separators; standalone imports also verified.

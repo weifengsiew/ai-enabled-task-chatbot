@@ -5,7 +5,14 @@ from pathlib import Path
 from typing import Any
 
 if __package__:
-    from .parser import parse_deadline_datetime, parse_required_pair, parse_task_index
+    from .parser import (
+        parse_deadline_datetime,
+        parse_due_date,
+        parse_event,
+        parse_note,
+        parse_required_pair,
+        parse_task_index,
+    )
     from .storage import save_tasks
     from .ui import (
         format_task,
@@ -18,7 +25,14 @@ if __package__:
         show_tasks_left,
     )
 else:
-    from parser import parse_deadline_datetime, parse_required_pair, parse_task_index
+    from parser import (
+        parse_deadline_datetime,
+        parse_due_date,
+        parse_event,
+        parse_note,
+        parse_required_pair,
+        parse_task_index,
+    )
     from storage import save_tasks
     from ui import (
         format_task,
@@ -139,18 +153,15 @@ def handle_event(line: str, tasks: list[dict[str, Any]], data_file: Path) -> Non
     Returns:
         None.
     """
-    # Parser: extract the arguments and check for /from and /to.
-    rest = line[len("event") :].strip()
-    if "/from" not in rest or "/to" not in rest:
-        # Parser / UI: validation detects invalid input; UI displays the input error here.
-        print("An event needs a description, /from, and /to.")
-        return
-    # Parser: split the description, start, and end, requiring each value.
-    description, times = (part.strip() for part in rest.split("/from", 1))
-    start, end = (part.strip() for part in times.split("/to", 1))
-    if not description or not start or not end:
-        # Parser / UI: validation detects invalid input; UI displays the input error here.
-        print("An event needs a description, /from, and /to.")
+    # Parser: extract the description, start, and end from the event command.
+    try:
+        description, start, end = parse_event(line)
+    except ValueError as error:
+        # Preserve the existing uncaught error for incorrectly ordered separators.
+        if str(error) != "An event needs a description, /from, and /to.":
+            raise
+        # UI: display the parser's input error.
+        print(str(error))
         return
     # Tasklist: build the task from parsed values and append it to the list.
     task = {
@@ -253,26 +264,21 @@ def handle_note(line: str, tasks: list[dict[str, Any]], data_file: Path) -> None
     Returns:
         None.
     """
-    # Parser: extract the task number and preserve the remaining note text.
-    pieces = line.split(maxsplit=2)
-    if len(pieces) != 3:
-        # Parser / UI: validation detects invalid input; UI displays the input error here.
-        print("Use note NUMBER TEXT, for example: note 2 ask about funding.")
-        return
+    # Parser: extract the task index and preserve the remaining note text.
     try:
-        # Parser: convert the task number to a zero-based index.
-        index = parse_task_index(pieces[1])
+        index, note = parse_note(line)
     except ValueError as error:
         # UI: display the parser's input error.
         print(str(error))
         return
     # Tasklist: check that the requested task exists in the current list.
     if index < 0 or index >= len(tasks):
-        # Tasklist / UI: the task lookup fails; UI displays the missing-task error here.
-        print(f"No task {pieces[1]}.")
+        # UI: preserve the task number exactly as entered in the error message.
+        number_text = line.split(maxsplit=2)[1]
+        print(f"No task {number_text}.")
         return
     # Tasklist: replace the selected task's note.
-    tasks[index]["note"] = pieces[2]
+    tasks[index]["note"] = note
     # UI: display the task and its updated note.
     show_noted(tasks[index])
     # Storage: create the destination directory and save the task list as JSON.
@@ -376,10 +382,10 @@ def handle_due(line: str, tasks: list[dict[str, Any]]) -> None:
     # Parser: extract and validate the requested calendar date.
     date_text = line[len("due") :].strip()
     try:
-        wanted = datetime.strptime(date_text, "%Y-%m-%d").date()
-    except ValueError:
-        # Parser / UI: validation detects invalid input; UI displays the input error here.
-        print("Use due YYYY-MM-DD.")
+        wanted = parse_due_date(date_text)
+    except ValueError as error:
+        # UI: display the parser's input error.
+        print(str(error))
         return
     # Tasklist: select deadlines by their stored due date.
     matches = [
