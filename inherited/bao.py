@@ -2,23 +2,22 @@
 
 import json
 from pathlib import Path
-from typing import Any
 
 if __package__:
     from . import command_handlers
     from .parser import InputError
     from .storage import load_tasks
-    from .tasklist import TaskNotFoundError
+    from .tasks import TaskNotFoundError, Tasks
     from .ui import show_error
 else:
     import command_handlers
     from parser import InputError
     from storage import load_tasks
-    from tasklist import TaskNotFoundError
+    from tasks import TaskNotFoundError, Tasks
     from ui import show_error
 
 
-TASKS: list[dict[str, Any]] = []
+TASKS = Tasks([])
 DATA_FILE = Path("data/inherited-tasks.json")
 
 

@@ -371,3 +371,12 @@ Update handler and `run()` docstrings to document propagated exceptions, meaning
 
 - Updated handler and coordinator docstrings with exception contracts, side effects, and specific parameter descriptions.
 - Executable ASTs are unchanged; all **13 supplied tests passed unchanged**.
+
+## refactor step 25
+
+Introduce `Tasks` in `tasks.py` to own the dictionary collection and its operations, with private `_items` and `_validate_index()`. Provide iteration, length, indexing, and `to_list()` for existing JSON storage; retain clear/extend operations for loading and reset. Update callers to methods while keeping parsing, display, and file access outside the class. Preserve behavior and run the supplied tests unchanged.
+
+### Step 25 results
+
+- Moved collection operations into `Tasks`, updated callers, and retained dictionary storage through `to_list()`. Loading and reset preserve the shared collection instance.
+- All **13 supplied tests passed unchanged**. Verified collection ownership, invalid-index guards, queries, exact saved JSON, and standalone restart.

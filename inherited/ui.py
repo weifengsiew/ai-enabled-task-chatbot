@@ -3,6 +3,11 @@
 from datetime import datetime
 from typing import Any
 
+if __package__:
+    from .tasks import Tasks
+else:
+    from tasks import Tasks
+
 
 def format_deadline(when: datetime) -> str:
     """Format a deadline date and optional time for display.
@@ -69,7 +74,7 @@ def format_task_summary(task: dict[str, Any]) -> str:
     return f'[{box}] {task["description"]}'
 
 
-def show_tasks(tasks: list[dict[str, Any]]) -> None:
+def show_tasks(tasks: Tasks) -> None:
     """Print the numbered task list and notes, or the empty-list message.
 
     Args:
