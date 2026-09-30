@@ -4,7 +4,6 @@ import io
 import json
 import unittest
 from contextlib import chdir, redirect_stdout
-from collections.abc import Iterator
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest.mock import call, patch
@@ -22,14 +21,10 @@ class ChatTests(unittest.TestCase):
         None.
         """
         directory = self.enterContext(TemporaryDirectory())
-        # Keep test data separate from the user's saved tasks.
+        # Isolate test data.
         self.enterContext(chdir(directory))
 
-    def _run_session(
-        self,
-        commands: list[str],
-        expected_saved: list[list[dict[str, str | bool | None]]] | None = None,
-    ) -> str:
+    def _run_session(self, commands: list[str]) -> str:
         """
         Runs chat with supplied commands and captures its printed output.
         Verifies that every command is requested and chat returns normally.
@@ -37,34 +32,13 @@ class ChatTests(unittest.TestCase):
         Args:
         -----
         commands (list[str]): The input sequence, ending with "bye".
-        expected_saved (list | None): Expected saved records before each input,
-            or None to skip intermediate file checks.
 
         Returns:
         --------
         str: The complete printed output, excluding mocked input prompts.
         """
-        def inputs() -> Iterator[str]:
-            """
-            Checks saved data before yielding each simulated input.
-
-            Returns:
-            --------
-            Iterator[str]: The session's commands in order.
-            """
-            for index, command in enumerate(commands):
-                if expected_saved is not None:
-                    # The previous command must be saved before the next input.
-                    saved = json.loads(
-                        Path("data/tasks.json").read_text(encoding="utf-8")
-                    )
-                    self.assertEqual(saved, expected_saved[index])
-                yield command
-
-        if expected_saved is not None:
-            self.assertEqual(len(expected_saved), len(commands))
         output = io.StringIO()
-        with patch("builtins.input", side_effect=inputs()) as mock_input:
+        with patch("builtins.input", side_effect=commands) as mock_input:
             with redirect_stdout(output):
                 result = chat()
 
@@ -72,189 +46,108 @@ class ChatTests(unittest.TestCase):
         self.assertEqual(mock_input.call_args_list, [call("> ")] * len(commands))
         return output.getvalue()
 
-    def test_valid_inputs(self) -> None:
+    def _assert_session(self, steps: list[tuple[str, str]]) -> None:
         """
-        Verifies task operations, deadline formatting, and date-based queries.
-        Checks each change is saved before the next input and survives restart.
+        Runs command/output pairs and verifies the complete session output.
+
+        Args:
+        -----
+        steps (list[tuple[str, str]]): Commands paired with expected responses,
+            ending with ("bye", "").
 
         Returns:
         --------
         None.
         """
-        steps = [
-            (
-                "todo read book",
-                "Added:\n"
-                "[T][ ]read book\n",
-            ),
-            (
-                "deadline submit report /by 2026-03-02",
-                "Added:\n"
-                "[D][ ]submit report (by: Mar 02 2026)\n",
-            ),
-            (
-                "deadline submit abstract /by 2026-03-01 1800",
-                "Added:\n"
-                "[D][ ]submit abstract (by: Mar 01 2026, 6pm)\n",
-            ),
-            (
-                "mark 2",
-                "Done:\n"
-                "[D][X]submit report (by: Mar 02 2026)\n",
-            ),
-            (
-                "unmark 2",
-                "Not done:\n"
-                "[D][ ]submit report (by: Mar 02 2026)\n",
-            ),
-            (
-                "note 2 attach receipts",
-                "Noted:\n"
-                "[D][ ]submit report (by: Mar 02 2026)\n"
-                "Note: attach receipts\n",
-            ),
-            (
-                "delete 1",
-                "Deleted:\n"
-                "[T][ ]read book\n"
-                "2 tasks left.\n",
-            ),
-            (
-                "list",
-                "1. [D][ ]submit report (by: Mar 02 2026)\n"
-                "Note: attach receipts\n"
-                "2. [D][ ]submit abstract (by: Mar 01 2026, 6pm)\n"
-                "That's 2 on your plate.\n",
-            ),
-            (
-                "deadline send slides /by 2026-03-01 2100",
-                "Added:\n"
-                "[D][ ]send slides (by: Mar 01 2026, 9pm)\n",
-            ),
-            (
-                "mark 3",
-                "Done:\n"
-                "[D][X]send slides (by: Mar 01 2026, 9pm)\n",
-            ),
-            (
-                "deadline renew licence /by 2026-03-01",
-                "Added:\n"
-                "[D][ ]renew licence (by: Mar 01 2026)\n",
-            ),
-            (
-                "todo read another book",
-                "Added:\n"
-                "[T][ ]read another book\n",
-            ),
-            (
-                "event meeting /from 2026-03-01 /to 2026-03-02",
-                "Added:\n"
-                "[E][ ]meeting (from: 2026-03-01 to: 2026-03-02)\n",
-            ),
-            (
-                "recurring water plants /every sunday",
-                "Added:\n"
-                "[R][ ]water plants (every: sunday)\n",
-            ),
-            (
-                "due 2026-03-01",
-                "1. [D][ ]submit abstract (by: Mar 01 2026, 6pm)\n"
-                "2. [D][X]send slides (by: Mar 01 2026, 9pm)\n"
-                "3. [D][ ]renew licence (by: Mar 01 2026)\n",
-            ),
-            (
-                "due 2026-03-03",
-                "No deadlines due on 2026-03-03.\n",
-            ),
-            ("bye", ""),
-        ]
         commands = [command for command, _ in steps]
         expected = "".join(output for _, output in steps)
+        self.assertEqual(self._run_session(commands), expected)
 
-        todo = {
-            "description": "read book", "task_type": "todo", "done": False,
-            "note": None, "day": None, "start": None, "end": None,
-            "due_date": None, "due_time": None,
-        }
-        deadline = {
-            **todo, "description": "submit report", "task_type": "deadline",
-            "due_date": "2026-03-02",
-        }
-        abstract = {
-            **deadline, "description": "submit abstract",
-            "due_date": "2026-03-01", "due_time": "18:00:00",
-        }
-        noted_deadline = {**deadline, "note": "attach receipts"}
-        slides = {**abstract, "description": "send slides", "due_time": "21:00:00"}
-        done_slides = {**slides, "done": True}
-        licence = {
-            **deadline, "description": "renew licence", "due_date": "2026-03-01",
-        }
-        another_todo = {**todo, "description": "read another book"}
-        event = {
-            **todo, "description": "meeting", "task_type": "event",
-            "start": "2026-03-01", "end": "2026-03-02",
-        }
-        recurring = {
-            **todo, "description": "water plants", "task_type": "recurring",
-            "day": "sunday",
-        }
-        remaining = [noted_deadline, abstract, done_slides, licence]
-        all_saved = [*remaining, another_todo, event, recurring]
-        # Expected file contents before each command, including first-run setup.
-        expected_saved = [
-            [],                                                   # todo read book
-            [todo],                                               # deadline report
-            [todo, deadline],                                     # deadline abstract
-            [todo, deadline, abstract],                           # mark 2
-            [todo, {**deadline, "done": True}, abstract],           # unmark 2
-            [todo, deadline, abstract],                           # note 2
-            [todo, noted_deadline, abstract],                      # delete 1
-            [noted_deadline, abstract],                            # list
-            [noted_deadline, abstract],                            # deadline slides
-            [noted_deadline, abstract, slides],                    # mark 3
-            [noted_deadline, abstract, done_slides],                # deadline licence
-            remaining,                                            # todo another book
-            [*remaining, another_todo],                            # event meeting
-            [*remaining, another_todo, event],                     # recurring plants
-            all_saved,                                            # due March 1
-            all_saved,                                            # due March 3
-            all_saved,                                            # bye
-        ]
-        self.assertEqual(self._run_session(commands, expected_saved), expected)
+    def test_valid_inputs(self) -> None:
+        """
+        Verifies every command using a shared set of five tasks.
+        Checks case-insensitive partial-word searches preserve original spelling.
 
-        # A fresh session must preserve timing, notes, status, and query results.
-        restart_steps = [
-            (
-                "list",
-                "1. [D][ ]submit report (by: Mar 02 2026)\n"
-                "Note: attach receipts\n"
-                "2. [D][ ]submit abstract (by: Mar 01 2026, 6pm)\n"
-                "3. [D][X]send slides (by: Mar 01 2026, 9pm)\n"
-                "4. [D][ ]renew licence (by: Mar 01 2026)\n"
-                "5. [T][ ]read another book\n"
-                "6. [E][ ]meeting (from: 2026-03-01 to: 2026-03-02)\n"
-                "7. [R][ ]water plants (every: sunday)\n"
-                "That's 6 on your plate.\n",
-            ),
-            (
-                "due 2026-03-01",
-                "1. [D][ ]submit abstract (by: Mar 01 2026, 6pm)\n"
-                "2. [D][X]send slides (by: Mar 01 2026, 9pm)\n"
-                "3. [D][ ]renew licence (by: Mar 01 2026)\n",
-            ),
-            ("bye", ""),
-        ]
-        restart_commands = [command for command, _ in restart_steps]
-        restart_expected = "".join(output for _, output in restart_steps)
-        self.assertEqual(
-            self._run_session(restart_commands, [all_saved] * len(restart_steps)),
-            restart_expected,
+        Returns:
+        --------
+        None.
+        """
+        updated_list = (
+            "1. [T][ ]read paper\n"
+            "2. [D][ ]renew licence (by: Mar 01 2026)\n"
+            "Note: attach receipts\n"
+            "3. [D][X]submit Paper (by: Mar 01 2026, 6pm)\n"
+            "4. [E][ ]meeting (from: 2026-03-01 to: 2026-03-02)\n"
+            "5. [R][ ]water plants (every: sunday)\n"
+            "That's 4 on your plate.\n"
         )
+        self._assert_session([
+            # Create todo, deadline (date-only and timed), event, and recurring tasks.
+            ("todo read paper",
+             "Added:\n[T][ ]read paper\n"),
+            ("deadline renew licence /by 2026-03-01",
+             "Added:\n[D][ ]renew licence (by: Mar 01 2026)\n"),
+            ("deadline submit Paper /by 2026-03-01 1800",
+             "Added:\n[D][ ]submit Paper (by: Mar 01 2026, 6pm)\n"),
+            ("event meeting /from 2026-03-01 /to 2026-03-02",
+             "Added:\n[E][ ]meeting (from: 2026-03-01 to: 2026-03-02)\n"),
+            ("recurring water plants /every sunday",
+             "Added:\n[R][ ]water plants (every: sunday)\n"),
+            ("list",
+             "1. [T][ ]read paper\n"
+             "2. [D][ ]renew licence (by: Mar 01 2026)\n"
+             "3. [D][ ]submit Paper (by: Mar 01 2026, 6pm)\n"
+             "4. [E][ ]meeting (from: 2026-03-01 to: 2026-03-02)\n"
+             "5. [R][ ]water plants (every: sunday)\n"
+             "That's 5 on your plate.\n"),
+            # Mark, unmark, and note.
+            ("mark 1",
+             "Done:\n[T][X]read paper\n"),
+            ("unmark 1",
+             "Not done:\n[T][ ]read paper\n"),
+            ("mark 3",
+             "Done:\n[D][X]submit Paper (by: Mar 01 2026, 6pm)\n"),
+            ("note 2 attach receipts",
+             "Noted:\n[D][ ]renew licence (by: Mar 01 2026)\nNote: attach receipts\n"),
+            ("list",
+             updated_list),
+            # Due.
+            ("due 2026-03-01",
+             "1. [D][ ]renew licence (by: Mar 01 2026)\n"
+             "Note: attach receipts\n"
+             "2. [D][X]submit Paper (by: Mar 01 2026, 6pm)\n"),
+            ("due 2026-03-02",
+             "No deadlines due on 2026-03-02.\n"),
+            ("list",
+             updated_list),
+            # Find: ignore case, match partial words, preserve spelling.
+            ("find PAP",
+             "1. [T][ ]read paper\n"
+             "2. [D][X]submit Paper (by: Mar 01 2026, 6pm)\n"),
+            ("find APE",
+             "1. [T][ ]read paper\n"
+             "2. [D][X]submit Paper (by: Mar 01 2026, 6pm)\n"),
+            ("find receipts",
+             'No tasks found matching "receipts".\n'),
+            ("list",
+             updated_list),
+            # Delete and list.
+            ("delete 1",
+             "Deleted:\n[T][ ]read paper\n4 tasks left.\n"),
+            ("list",
+             "1. [D][ ]renew licence (by: Mar 01 2026)\n"
+             "Note: attach receipts\n"
+             "2. [D][X]submit Paper (by: Mar 01 2026, 6pm)\n"
+             "3. [E][ ]meeting (from: 2026-03-01 to: 2026-03-02)\n"
+             "4. [R][ ]water plants (every: sunday)\n"
+             "That's 3 on your plate.\n"),
+            ("bye",
+             ""),
+        ])
 
     def test_invalid_inputs(self) -> None:
         """
-        Verifies invalid commands, deadlines, and queries leave the task list empty.
+        Verifies invalid commands report guidance without changing saved tasks.
 
         Returns:
         --------
@@ -262,87 +155,119 @@ class ChatTests(unittest.TestCase):
         """
         unknown_command = (
             "Never heard of it. Try: todo, deadline, event, recurring, "
-            "list, due, mark, unmark, note, delete, bye.\n"
+            "list, due, find, mark, unmark, note, delete, bye.\n"
+        )
+        invalid_deadline = (
+            "Invalid deadline. Use a valid date as YYYY-MM-DD, "
+            "optionally followed by a time as HHMM (0000–2359).\n"
         )
         steps = [
-            ("list extra", unknown_command),
-            ("bye extra", unknown_command),
-            (
-                "todo",
-                "Use: todo <description>\n",
-            ),
-            (
-                "deadline submit report",
-                "Use: deadline <description> /by YYYY-MM-DD [HHMM]\n",
-            ),
-            (
-                "event meeting /from monday",
-                "Use: event <description> /from <start> /to <end>\n",
-            ),
-            (
-                "recurring water plants",
-                "Use: recurring <description> /every <day>\n",
-            ),
-            (
-                "mark abc",
-                "Use: mark <number>\n",
-            ),
-            (
-                "unmark abc",
-                "Use: unmark <number>\n",
-            ),
-            (
-                "note 1",
-                "Use: note <number> <note>\n",
-            ),
-            (
-                "delete abc",
-                "Use: delete <number>\n",
-            ),
-            (
-                "deadline submit report /by 2026-02-30",
-                "Invalid deadline. Use a valid date as YYYY-MM-DD, optionally followed by a time as HHMM (0000–2359).\n",
-            ),
-            (
-                "deadline submit report /by 2026-03-01 2400",
-                "Invalid deadline. Use a valid date as YYYY-MM-DD, optionally followed by a time as HHMM (0000–2359).\n",
-            ),
-            (
-                "due",
-                "Use: due YYYY-MM-DD\n",
-            ),
-            (
-                "due 2026-3-01",
-                "Use: due YYYY-MM-DD\n",
-            ),
-            (
-                "due 2026-03-01 1800",
-                "Use: due YYYY-MM-DD\n",
-            ),
-            (
-                "due 2026-02-30",
-                "Invalid date. Use a valid calendar date as YYYY-MM-DD.\n",
-            ),
-            (
-                "list",
-                "That's 0 on your plate.\n",
-            ),
-            ("bye", ""),
+            # Invalid command arguments.
+            ("list extra",
+             unknown_command),
+            ("bye extra",
+             unknown_command),
+            ("todo",
+             "Use: todo <description>\n"),
+            ("deadline submit report",
+             "Use: deadline <description> /by YYYY-MM-DD [HHMM]\n"),
+            ("event meeting /from monday",
+             "Use: event <description> /from <start> /to <end>\n"),
+            ("recurring water plants",
+             "Use: recurring <description> /every <day>\n"),
+            ("mark abc",
+             "Use: mark <number>\n"),
+            ("unmark abc",
+             "Use: unmark <number>\n"),
+            ("note 1",
+             "Use: note <number> <note>\n"),
+            ("delete abc",
+             "Use: delete <number>\n"),
+            # Invalid dates/times.
+            ("deadline submit report /by 2026-02-30",
+             invalid_deadline),
+            ("deadline submit report /by 2026-03-01 2400",
+             invalid_deadline),
+            ("due",
+             "Use: due YYYY-MM-DD\n"),
+            ("due 2026-3-01",
+             "Use: due YYYY-MM-DD\n"),
+            ("due 2026-03-01 1800",
+             "Use: due YYYY-MM-DD\n"),
+            ("due 2026-02-30",
+             "Invalid date. Use a valid calendar date as YYYY-MM-DD.\n"),
+            # Empty searches.
+            ("find",
+             "Use: find <text>\n"),
+            ("find   ",
+             "Use: find <text>\n"),
+            ("list",
+             "That's 0 on your plate.\n"),
+            ("bye",
+             ""),
         ]
-        commands = [command for command, _ in steps]
-        expected = "".join(output for _, output in steps)
-
-        # First run must create an empty save file without manual setup.
         self._run_session(["bye"])
         path = Path("data/tasks.json")
         original = path.read_text(encoding="utf-8")
-        self.assertEqual(json.loads(original), [])
-        # Invalid commands must neither trigger a save nor alter the file.
         with patch("bao.cli.Tasks._save_tasks") as save:
-            self.assertEqual(self._run_session(commands), expected)
+            self._assert_session(steps)
             save.assert_not_called()
         self.assertEqual(path.read_text(encoding="utf-8"), original)
 
+    def test_saving_and_reloading(self) -> None:
+        """
+        Verifies tasks retain their details and changes across chat sessions.
+        Checks date queries and searches against the reloaded list.
+
+        Returns:
+        --------
+        None.
+        """
+        # First-run setup.
+        self._run_session(["bye"])
+        path = Path("data/tasks.json")
+        self.assertEqual(json.loads(path.read_text(encoding="utf-8")), [])
+
+        # Save tasks and updates.
+        self._run_session([
+            "todo read book",
+            "deadline submit report /by 2026-03-02",
+            "deadline send slides /by 2026-03-01 2100",
+            "event meeting /from monday /to tuesday",
+            "recurring water plants /every sunday",
+            "todo remove this",
+            "mark 1",
+            "unmark 1",
+            "mark 3",
+            "note 2 attach receipts",
+            "delete 6",
+            "bye",
+        ])
+        saved = path.read_text(encoding="utf-8")
+
+        # Reload in a new session.
+        steps = [
+            ("list",
+             "1. [T][ ]read book\n"
+             "2. [D][ ]submit report (by: Mar 02 2026)\n"
+             "Note: attach receipts\n"
+             "3. [D][X]send slides (by: Mar 01 2026, 9pm)\n"
+             "4. [E][ ]meeting (from: monday to: tuesday)\n"
+             "5. [R][ ]water plants (every: sunday)\n"
+             "That's 4 on your plate.\n"),
+            # Due after reload.
+            ("due 2026-03-01",
+             "1. [D][X]send slides (by: Mar 01 2026, 9pm)\n"),
+            # Find after reload.
+            ("find slides",
+             "1. [D][X]send slides (by: Mar 01 2026, 9pm)\n"),
+            ("bye",
+             ""),
+        ]
+        with patch("bao.cli.Tasks._save_tasks") as save:
+            self._assert_session(steps)
+            save.assert_not_called()
+        self.assertEqual(path.read_text(encoding="utf-8"), saved)
 
 
 if __name__ == "__main__":

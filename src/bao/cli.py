@@ -561,6 +561,43 @@ class Tasks:
         for i, task in enumerate(matching_tasks, start=1):
             print(f"{i}. {task}")
 
+    def find_tasks(self, user_response: str) -> None:
+        """
+        Prints tasks matching a case-insensitive substring of their description.
+        Numbers results from 1, includes completed tasks, and preserves original spelling.
+        Prints guidance for an empty query or a message if nothing matches.
+
+        Args:
+        -----
+        user_response (str): A command in the format "find <text>".
+
+        Returns:
+        --------
+        None.
+        """
+        user_response_match = self._match_user_response(
+            user_response,
+            r"^find\s+(\S(?:.*\S)?)\s*$",
+            "Use: find <text>",
+        )
+
+        if user_response_match is None:
+            return
+
+        query = user_response_match.group(1)
+        search_text = query.casefold()
+        matching_tasks = [
+            task for task in self.tasks
+            if search_text in task.description.casefold()
+        ]
+
+        if not matching_tasks:
+            print(f'No tasks found matching "{query}".')
+            return
+
+        for i, task in enumerate(matching_tasks, start=1):
+            print(f"{i}. {task}")
+
     def mark_task(self, user_response: str) -> None:
         """
         Marks the specified task as complete, saves it, and prints confirmation.
@@ -722,6 +759,9 @@ def chat() -> None:
         elif user_response.startswith("due"):
             tasks.list_due_tasks(user_response)
 
+        elif user_response.startswith("find"):
+            tasks.find_tasks(user_response)
+
         elif user_response.startswith("mark"):
             tasks.mark_task(user_response)
 
@@ -738,7 +778,7 @@ def chat() -> None:
             tasks.add_task(user_response)
             
         else:
-            print("Never heard of it. Try: todo, deadline, event, recurring, list, due, mark, unmark, note, delete, bye.")
+            print("Never heard of it. Try: todo, deadline, event, recurring, list, due, find, mark, unmark, note, delete, bye.")
 
 def main() -> None:
     """
