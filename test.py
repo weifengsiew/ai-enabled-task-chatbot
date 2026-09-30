@@ -74,42 +74,106 @@ class ChatTests(unittest.TestCase):
 
     def test_valid_inputs(self) -> None:
         """
+<<<<<<< HEAD
         Verifies task creation, updates, deletion, and listing with two tasks.
         Checks each change is saved before the next input and survives restart.
+=======
+        Verifies task operations, deadline formatting, and date-based queries.
+>>>>>>> stage-8
 
         Returns:
         --------
         None.
         """
-        commands = [
-            "todo read book",
-            "deadline submit report /by friday",
-            "mark 2",
-            "unmark 2",
-            "note 2 attach receipts",
-            "delete 1",
-            "list",
-            "bye",
+        steps = [
+            (
+                "todo read book",
+                "Added:\n"
+                "[T][ ]read book\n",
+            ),
+            (
+                "deadline submit report /by 2026-03-02",
+                "Added:\n"
+                "[D][ ]submit report (by: Mar 02 2026)\n",
+            ),
+            (
+                "deadline submit abstract /by 2026-03-01 1800",
+                "Added:\n"
+                "[D][ ]submit abstract (by: Mar 01 2026, 6pm)\n",
+            ),
+            (
+                "mark 2",
+                "Done:\n"
+                "[D][X]submit report (by: Mar 02 2026)\n",
+            ),
+            (
+                "unmark 2",
+                "Not done:\n"
+                "[D][ ]submit report (by: Mar 02 2026)\n",
+            ),
+            (
+                "note 2 attach receipts",
+                "Noted:\n"
+                "[D][ ]submit report (by: Mar 02 2026)\n"
+                "Note: attach receipts\n",
+            ),
+            (
+                "delete 1",
+                "Deleted:\n"
+                "[T][ ]read book\n"
+                "2 tasks left.\n",
+            ),
+            (
+                "list",
+                "1. [D][ ]submit report (by: Mar 02 2026)\n"
+                "Note: attach receipts\n"
+                "2. [D][ ]submit abstract (by: Mar 01 2026, 6pm)\n"
+                "That's 2 on your plate.\n",
+            ),
+            (
+                "deadline send slides /by 2026-03-01 2100",
+                "Added:\n"
+                "[D][ ]send slides (by: Mar 01 2026, 9pm)\n",
+            ),
+            (
+                "mark 3",
+                "Done:\n"
+                "[D][X]send slides (by: Mar 01 2026, 9pm)\n",
+            ),
+            (
+                "deadline renew licence /by 2026-03-01",
+                "Added:\n"
+                "[D][ ]renew licence (by: Mar 01 2026)\n",
+            ),
+            (
+                "todo read another book",
+                "Added:\n"
+                "[T][ ]read another book\n",
+            ),
+            (
+                "event meeting /from 2026-03-01 /to 2026-03-02",
+                "Added:\n"
+                "[E][ ]meeting (from: 2026-03-01 to: 2026-03-02)\n",
+            ),
+            (
+                "recurring water plants /every sunday",
+                "Added:\n"
+                "[R][ ]water plants (every: sunday)\n",
+            ),
+            (
+                "due 2026-03-01",
+                "1. [D][ ]submit abstract (by: Mar 01 2026, 6pm)\n"
+                "2. [D][X]send slides (by: Mar 01 2026, 9pm)\n"
+                "3. [D][ ]renew licence (by: Mar 01 2026)\n",
+            ),
+            (
+                "due 2026-03-03",
+                "No deadlines due on 2026-03-03.\n",
+            ),
+            ("bye", ""),
         ]
-        expected = (
-            "Added:\n"
-            "[T][ ]read book\n"
-            "Added:\n"
-            "[D][ ]submit report (by: friday)\n"
-            "Done:\n"
-            "[D][X]submit report (by: friday)\n"
-            "Not done:\n"
-            "[D][ ]submit report (by: friday)\n"
-            "Noted:\n"
-            "[D][ ]submit report (by: friday)\n"
-            "Note: attach receipts\n"
-            "Deleted:\n"
-            "[T][ ]read book\n"
-            "1 tasks left.\n"
-            "1. [D][ ]submit report (by: friday)\n"
-            "Note: attach receipts\n"
-            "That's 1 on your plate.\n"
-        )
+        commands = [command for command, _ in steps]
+        expected = "".join(output for _, output in steps)
 
         todo = {
             "description": "read book", "task_type": "todo", "done": False,
@@ -142,39 +206,83 @@ class ChatTests(unittest.TestCase):
 
     def test_invalid_inputs(self) -> None:
         """
-        Verifies one invalid example per command without ending the session.
+        Verifies invalid commands, deadlines, and queries leave the task list empty.
 
         Returns:
         --------
         None.
         """
-        commands = [
-            "list extra",
-            "bye extra",
-            "todo",
-            "deadline submit report",
-            "event meeting /from monday",
-            "recurring water plants",
-            "mark abc",
-            "unmark abc",
-            "note 1",
-            "delete abc",
-            "bye",
-        ]
         unknown_command = (
             "Never heard of it. Try: todo, deadline, event, recurring, "
-            "list, mark, unmark, note, delete, bye.\n"
+            "list, due, mark, unmark, note, delete, bye.\n"
         )
-        expected = unknown_command * 2 + (
-            "Use: todo <description>\n"
-            "Use: deadline <description> /by <day>\n"
-            "Use: event <description> /from <start> /to <end>\n"
-            "Use: recurring <description> /every <day>\n"
-            "Use: mark <number>\n"
-            "Use: unmark <number>\n"
-            "Use: note <number> <note>\n"
-            "Use: delete <number>\n"
-        )
+        steps = [
+            ("list extra", unknown_command),
+            ("bye extra", unknown_command),
+            (
+                "todo",
+                "Use: todo <description>\n",
+            ),
+            (
+                "deadline submit report",
+                "Use: deadline <description> /by YYYY-MM-DD [HHMM]\n",
+            ),
+            (
+                "event meeting /from monday",
+                "Use: event <description> /from <start> /to <end>\n",
+            ),
+            (
+                "recurring water plants",
+                "Use: recurring <description> /every <day>\n",
+            ),
+            (
+                "mark abc",
+                "Use: mark <number>\n",
+            ),
+            (
+                "unmark abc",
+                "Use: unmark <number>\n",
+            ),
+            (
+                "note 1",
+                "Use: note <number> <note>\n",
+            ),
+            (
+                "delete abc",
+                "Use: delete <number>\n",
+            ),
+            (
+                "deadline submit report /by 2026-02-30",
+                "Invalid deadline. Use a valid date as YYYY-MM-DD, optionally followed by a time as HHMM (0000–2359).\n",
+            ),
+            (
+                "deadline submit report /by 2026-03-01 2400",
+                "Invalid deadline. Use a valid date as YYYY-MM-DD, optionally followed by a time as HHMM (0000–2359).\n",
+            ),
+            (
+                "due",
+                "Use: due YYYY-MM-DD\n",
+            ),
+            (
+                "due 2026-3-01",
+                "Use: due YYYY-MM-DD\n",
+            ),
+            (
+                "due 2026-03-01 1800",
+                "Use: due YYYY-MM-DD\n",
+            ),
+            (
+                "due 2026-02-30",
+                "Invalid date. Use a valid calendar date as YYYY-MM-DD.\n",
+            ),
+            (
+                "list",
+                "That's 0 on your plate.\n",
+            ),
+            ("bye", ""),
+        ]
+        commands = [command for command, _ in steps]
+        expected = "".join(output for _, output in steps)
 
         # First run must create an empty save file without manual setup.
         self._run_session(["bye"])
