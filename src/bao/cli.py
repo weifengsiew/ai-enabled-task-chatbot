@@ -1,4 +1,5 @@
 """Command-line entry point for bao."""
+
 import json
 import re
 from datetime import date, time
@@ -15,6 +16,7 @@ def greeting() -> None:
     """
     print("Hello! I'm bao. What needs doing?")
 
+
 def farewell() -> None:
     """
     Prints Bao's closing message to the terminal.
@@ -24,7 +26,8 @@ def farewell() -> None:
     None.
     """
     print("Later.")
-    
+
+
 class Task:
     def __init__(self, description: str, task_type: str) -> None:
         """
@@ -58,7 +61,7 @@ class Task:
         None.
         """
         self.done = True
-    
+
     def unmark_done(self) -> None:
         """
         Marks this task as incomplete by setting its done status to False.
@@ -112,7 +115,8 @@ class Task:
             "todo": "[T]",
             "deadline": "[D]",
             "event": "[E]",
-            "recurring": "[R]"}
+            "recurring": "[R]",
+        }
         return task_type_marks.get(self.task_type, "")
 
     def _get_done_mark(self) -> str:
@@ -152,11 +156,7 @@ class Task:
 
             if self.due_time is not None:
                 hour = self.due_time.hour % 12 or 12
-                minute = (
-                    f":{self.due_time.minute:02d}"
-                    if self.due_time.minute
-                    else ""
-                )
+                minute = f":{self.due_time.minute:02d}" if self.due_time.minute else ""
                 period = "am" if self.due_time.hour < 12 else "pm"
                 deadline_text += f", {hour}{minute}{period}"
 
@@ -165,6 +165,7 @@ class Task:
             time_info = f" (from: {self.start} to: {self.end})"
 
         return time_info
+
 
 class Tasks:
     def __init__(self) -> None:
@@ -192,17 +193,23 @@ class Tasks:
 
         records = []
         for task in self.tasks:
-            records.append({
-                "description": task.description,
-                "task_type": task.task_type,
-                "done": task.done,
-                "note": task.note,
-                "day": task.day,
-                "start": task.start,
-                "end": task.end,
-                "due_date": task.due_date.isoformat() if task.due_date is not None else None,
-                "due_time": task.due_time.isoformat() if task.due_time is not None else None,
-            })
+            records.append(
+                {
+                    "description": task.description,
+                    "task_type": task.task_type,
+                    "done": task.done,
+                    "note": task.note,
+                    "day": task.day,
+                    "start": task.start,
+                    "end": task.end,
+                    "due_date": task.due_date.isoformat()
+                    if task.due_date is not None
+                    else None,
+                    "due_time": task.due_time.isoformat()
+                    if task.due_time is not None
+                    else None,
+                }
+            )
 
         path.write_text(json.dumps(records, indent=2), encoding="utf-8")
 
@@ -232,8 +239,12 @@ class Tasks:
             task.end = record.get("end")
             due_date = record.get("due_date")
             due_time = record.get("due_time")
-            task.due_date = date.fromisoformat(due_date) if due_date is not None else None
-            task.due_time = time.fromisoformat(due_time) if due_time is not None else None
+            task.due_date = (
+                date.fromisoformat(due_date) if due_date is not None else None
+            )
+            task.due_time = (
+                time.fromisoformat(due_time) if due_time is not None else None
+            )
             loaded_tasks.append(task)
 
         self.tasks = loaded_tasks
@@ -330,7 +341,7 @@ class Tasks:
 
         task = Task(description, "todo")
         self._append_task(task)
-    
+
     def _add_recurring_task(self, user_response: str) -> None:
         """
         Creates and adds a recurring task from command text.
@@ -504,7 +515,8 @@ class Tasks:
                 "  todo <description>\n"
                 "  deadline <description> /by YYYY-MM-DD [HHMM]\n"
                 "  event <description> /from <start> /to <end>\n"
-                "  recurring <description> /every <day>")
+                "  recurring <description> /every <day>"
+            )
 
     def list_tasks(self) -> None:
         """
@@ -517,7 +529,7 @@ class Tasks:
         """
         for i, task in enumerate(self.tasks, start=1):
             print(f"{i}. {task}")
-         
+
         undone_task_count = sum(1 for task in self.tasks if not task.done)
         print(f"That's {undone_task_count} on your plate.")
 
@@ -551,7 +563,8 @@ class Tasks:
             return
 
         matching_tasks = [
-            task for task in self.tasks
+            task
+            for task in self.tasks
             if task.task_type == "deadline" and task.due_date == query_date
         ]
 
@@ -588,8 +601,7 @@ class Tasks:
         query = user_response_match.group(1)
         search_text = query.casefold()
         matching_tasks = [
-            task for task in self.tasks
-            if search_text in task.description.casefold()
+            task for task in self.tasks if search_text in task.description.casefold()
         ]
 
         if not matching_tasks:
@@ -735,6 +747,7 @@ class Tasks:
         remaining = len(self.tasks)
         print(f"{remaining} tasks left.")
 
+
 def chat() -> None:
     """
     Runs an interactive task-management session with the saved task collection.
@@ -774,12 +787,15 @@ def chat() -> None:
 
         elif user_response.startswith("delete"):
             tasks.delete_task(user_response)
-        
+
         elif user_response.startswith(("todo", "deadline", "event", "recurring")):
             tasks.add_task(user_response)
-            
+
         else:
-            print("Never heard of it. Try: todo, deadline, event, recurring, list, due, find, mark, unmark, note, delete, bye.")
+            print(
+                "Never heard of it. Try: todo, deadline, event, recurring, list, due, find, mark, unmark, note, delete, bye."
+            )
+
 
 def main() -> None:
     """
