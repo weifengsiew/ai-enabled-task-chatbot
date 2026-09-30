@@ -1,5 +1,7 @@
 """Command-line entry point for bao."""
+import json
 import re
+from pathlib import Path
 
 def greeting() -> None:
     """
@@ -24,7 +26,7 @@ def farewell() -> None:
 class Task:
     def __init__(self, description: str, task_type: str) -> None:
         """
-        Initializes an incomplete task with no note or day assigned.
+        Initializes an incomplete task with no note or timing assigned.
 
         Args:
         -----
@@ -40,6 +42,8 @@ class Task:
         self.note = None
         self.task_type = task_type
         self.day = None
+        self.start: str | None = None
+        self.end: str | None = None
 
     def mark_done(self) -> None:
         """
@@ -149,13 +153,68 @@ class Task:
 class Tasks:
     def __init__(self) -> None:
         """
-        Initializes an empty task collection.
+        Loads saved tasks, creating an empty save file on the first run.
 
         Returns:
         --------
         None.
         """
         self.tasks: list[Task] = []
+        self._load_tasks()
+
+    def _save_tasks(self) -> None:
+        """
+        Saves the task list to data/tasks.json.
+        Creates the data directory if needed.
+
+        Returns:
+        --------
+        None.
+        """
+        path = Path("data/tasks.json")
+        path.parent.mkdir(parents=True, exist_ok=True)
+
+        records = []
+        for task in self.tasks:
+            records.append({
+                "description": task.description,
+                "task_type": task.task_type,
+                "done": task.done,
+                "note": task.note,
+                "day": task.day,
+                "start": task.start,
+                "end": task.end,
+            })
+
+        path.write_text(json.dumps(records, indent=2), encoding="utf-8")
+
+    def _load_tasks(self) -> None:
+        """
+        Loads the task list from data/tasks.json.
+        Creates an empty save file if it does not exist.
+
+        Returns:
+        --------
+        None.
+        """
+        path = Path("data/tasks.json")
+        if not path.exists():
+            self._save_tasks()
+            return
+
+        records = json.loads(path.read_text(encoding="utf-8"))
+        loaded_tasks = []
+
+        for record in records:
+            task = Task(record["description"], record["task_type"])
+            task.done = record["done"]
+            task.note = record["note"]
+            task.day = record["day"]
+            task.start = record.get("start")
+            task.end = record.get("end")
+            loaded_tasks.append(task)
+
+        self.tasks = loaded_tasks
 
     @staticmethod
     def _match_command(
@@ -209,7 +268,7 @@ class Tasks:
 
     def _append_task(self, task: Task) -> None:
         """
-        Appends a task to the collection and prints confirmation.
+        Appends a task to the collection, saves it, and prints confirmation.
 
         Args:
         -----
@@ -220,6 +279,7 @@ class Tasks:
         None.
         """
         self.tasks.append(task)
+        self._save_tasks()
         print(f"Added:\n{task}")
 
     def _add_todo_task(self, user_response: str) -> None:
@@ -396,7 +456,7 @@ class Tasks:
 
     def mark_task(self, user_response: str) -> None:
         """
-        Marks the specified task as complete and prints confirmation.
+        Marks the specified task as complete, saves it, and prints confirmation.
         Prints guidance if the command or task number is invalid.
 
         Args:
@@ -424,11 +484,12 @@ class Tasks:
 
         task = self.tasks[task_number - 1]
         task.mark_done()
+        self._save_tasks()
         print(f"Done:\n{task}")
 
     def unmark_task(self, user_response: str) -> None:
         """
-        Marks the specified task as incomplete and prints confirmation.
+        Marks the specified task as incomplete, saves it, and prints confirmation.
         Prints guidance if the command or task number is invalid.
 
         Args:
@@ -456,11 +517,13 @@ class Tasks:
 
         task = self.tasks[task_number - 1]
         task.unmark_done()
+        self._save_tasks()
         print(f"Not done:\n{task}")
 
     def note_task(self, user_response: str) -> None:
         """
         Stores a note on the specified task, replacing any existing note.
+        Saves the updated task list.
         Prints confirmation, or guidance if the command or task number is invalid.
 
         Args:
@@ -489,11 +552,13 @@ class Tasks:
 
         task = self.tasks[task_number - 1]
         task.add_note(note)
+        self._save_tasks()
         print(f"Noted:\n{task}")
 
     def delete_task(self, user_response: str) -> None:
         """
         Removes the specified task and prints it with the remaining task count.
+        Saves the updated task list before printing confirmation.
         Prints guidance if the command or task number is invalid.
 
         Args:
@@ -520,15 +585,16 @@ class Tasks:
             return
 
         task = self.tasks.pop(task_number - 1)
+        self._save_tasks()
         print(f"Deleted:\n{task}")
         remaining = len(self.tasks)
         print(f"{remaining} tasks left.")
 
 def chat() -> None:
     """
-    Runs an interactive task-management session with an empty task collection.
+    Runs an interactive task-management session with the saved task collection.
     Reads terminal commands and dispatches task operations until "bye" is entered.
-    Prints guidance for unrecognized commands. Tasks are kept only for this session.
+    Prints guidance for unrecognized commands. Successful changes are saved.
 
     Returns:
     --------
@@ -575,5 +641,9 @@ def main() -> None:
     None.
     """
     greeting()
-    chat()
+    try:
+        chat()
+    except (OSError, ValueError) as error:
+        print(error)
+        return
     farewell()
