@@ -6,10 +6,10 @@ from typing import Any
 
 if __package__:
     from .storage import save_tasks
-    from .ui import format_task, show_added
+    from .ui import format_task, format_task_summary, show_added, show_tasks, show_tasks_left
 else:
     from storage import save_tasks
-    from ui import format_task, show_added
+    from ui import format_task, format_task_summary, show_added, show_tasks, show_tasks_left
 
 
 def handle_empty_input() -> None:
@@ -41,21 +41,8 @@ def handle_list(tasks: list[dict[str, Any]]) -> None:
     Returns:
         None.
     """
-    # Parser: absent; the caller has already recognized the list command.
-    # Storage: absent; tasks are supplied in memory, with no file access here.
-    # Tasklist: read the supplied collection; no tasks are changed.
-    if not tasks:
-        # UI: display the empty-list message.
-        print("Nothing on your plate.")
-    else:
-        # UI: number the supplied tasks for display, starting at 1.
-        for number, task in enumerate(tasks, 1):
-            # UI: format the completion box and each task kind.
-            display = format_task(task)
-            # UI: print the formatted task and its optional note.
-            print(f"{number}.{display}")
-            if task["note"]:
-                print(f'   Note: {task["note"]}')
+    # UI: display the task list and its optional notes.
+    show_tasks(tasks)
 
 
 def handle_todo(line: str, tasks: list[dict[str, Any]], data_file: Path) -> None:
@@ -245,9 +232,8 @@ def handle_mark_unmark(line: str, tasks: list[dict[str, Any]], data_file: Path) 
     # Tasklist: update the selected task's completion state.
     tasks[index]["done"] = command == "mark"
     # UI: format and display the updated completion state and description.
-    box = "X" if tasks[index]["done"] else " "
     print("Done:" if command == "mark" else "Not done:")
-    print(f'  [{box}] {tasks[index]["description"]}')
+    print(f"  {format_task_summary(tasks[index])}")
     # Storage: create the destination directory and save the task list as JSON.
     save_tasks(tasks, data_file)
 
@@ -325,7 +311,7 @@ def handle_delete(line: str, tasks: list[dict[str, Any]], data_file: Path) -> No
     # UI: display the removed task and the remaining task count.
     print("Deleted:")
     print(f'  {removed["description"]}')
-    print(f"{len(tasks)} tasks left.")
+    show_tasks_left(len(tasks))
     # Storage: create the destination directory and save the task list as JSON.
     save_tasks(tasks, data_file)
 
@@ -346,7 +332,7 @@ def handle_clear(tasks: list[dict[str, Any]], data_file: Path) -> None:
     removed = before - len(tasks)
     # UI: display the number removed and the remaining task count.
     print(f"Cleared {removed} completed tasks.")
-    print(f"{len(tasks)} tasks left.")
+    show_tasks_left(len(tasks))
     # Storage: create the destination directory and save the task list as JSON.
     save_tasks(tasks, data_file)
 
@@ -374,8 +360,7 @@ def handle_find(line: str, tasks: list[dict[str, Any]]) -> None:
         print("No matching tasks.")
     # UI: number, format, and display the matching tasks.
     for number, task in enumerate(matches, 1):
-        box = "X" if task["done"] else " "
-        print(f'{number}.[{box}] {task["description"]}')
+        print(f"{number}.{format_task_summary(task)}")
 
 
 def handle_due(line: str, tasks: list[dict[str, Any]]) -> None:

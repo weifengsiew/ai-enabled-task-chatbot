@@ -169,3 +169,19 @@ This centralizes due-task display formatting in `ui.py`. Verify the change with 
 
 - `handle_due()` now uses `format_task()`, preserving numbering and output. Removed the unused `format_deadline` imports from the handlers module.
 - All **13 supplied tests passed unchanged**.
+
+
+## refactor step 9
+
+Extract three UI responsibilities into `ui.py`:
+
+- `format_task_summary(task: dict[str, Any]) -> str`: share completion-box and description formatting between `handle_mark_unmark()` and `handle_find()`, keeping indentation and numbering in the handlers.
+- `show_tasks(tasks: list[dict[str, Any]]) -> None`: move the empty-list message, numbered task display, and optional notes from `handle_list()` into UI, reusing `format_task()`.
+- `show_tasks_left(count: int) -> None`: share the remaining-task message between `handle_delete()` and `handle_clear()`.
+
+Preserve existing output and verify the changes with the supplied tests without modifying them.
+
+### Step 9 results
+
+- Added `format_task_summary()`, `show_tasks()`, and `show_tasks_left()` to `ui.py` and reused them in the relevant handlers, preserving existing output.
+- All **13 supplied tests passed unchanged**.

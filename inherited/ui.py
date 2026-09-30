@@ -54,3 +54,46 @@ def show_added(task: dict[str, Any]) -> None:
     """
     print("Added:")
     print(f"  {format_task(task)}")
+
+
+def format_task_summary(task: dict[str, Any]) -> str:
+    """Format a task's completion box and description.
+
+    Args:
+        task: Task data containing its completion state and description.
+
+    Returns:
+        The completion box and description, without numbering or indentation.
+    """
+    box = "X" if task["done"] else " "
+    return f'[{box}] {task["description"]}'
+
+
+def show_tasks(tasks: list[dict[str, Any]]) -> None:
+    """Print the numbered task list and notes, or the empty-list message.
+
+    Args:
+        tasks: Tasks to display in their supplied order.
+
+    Returns:
+        None.
+    """
+    if not tasks:
+        print("Nothing on your plate.")
+    else:
+        for number, task in enumerate(tasks, 1):
+            print(f"{number}.{format_task(task)}")
+            if task["note"]:
+                print(f'   Note: {task["note"]}')
+
+
+def show_tasks_left(count: int) -> None:
+    """Print the remaining task count.
+
+    Args:
+        count: Number of tasks remaining in the list.
+
+    Returns:
+        None.
+    """
+    print(f"{count} tasks left.")
