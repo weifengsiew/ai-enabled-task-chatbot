@@ -74,12 +74,8 @@ class ChatTests(unittest.TestCase):
 
     def test_valid_inputs(self) -> None:
         """
-<<<<<<< HEAD
-        Verifies task creation, updates, deletion, and listing with two tasks.
-        Checks each change is saved before the next input and survives restart.
-=======
         Verifies task operations, deadline formatting, and date-based queries.
->>>>>>> stage-8
+        Checks each change is saved before the next input and survives restart.
 
         Returns:
         --------
@@ -178,30 +174,82 @@ class ChatTests(unittest.TestCase):
         todo = {
             "description": "read book", "task_type": "todo", "done": False,
             "note": None, "day": None, "start": None, "end": None,
+            "due_date": None, "due_time": None,
         }
         deadline = {
-            "description": "submit report", "task_type": "deadline", "done": False,
-            "note": None, "day": "friday", "start": None, "end": None,
+            **todo, "description": "submit report", "task_type": "deadline",
+            "due_date": "2026-03-02",
+        }
+        abstract = {
+            **deadline, "description": "submit abstract",
+            "due_date": "2026-03-01", "due_time": "18:00:00",
         }
         noted_deadline = {**deadline, "note": "attach receipts"}
+        slides = {**abstract, "description": "send slides", "due_time": "21:00:00"}
+        done_slides = {**slides, "done": True}
+        licence = {
+            **deadline, "description": "renew licence", "due_date": "2026-03-01",
+        }
+        another_todo = {**todo, "description": "read another book"}
+        event = {
+            **todo, "description": "meeting", "task_type": "event",
+            "start": "2026-03-01", "end": "2026-03-02",
+        }
+        recurring = {
+            **todo, "description": "water plants", "task_type": "recurring",
+            "day": "sunday",
+        }
+        remaining = [noted_deadline, abstract, done_slides, licence]
+        all_saved = [*remaining, another_todo, event, recurring]
         # Expected file contents before each command, including first-run setup.
         expected_saved = [
-            [],
-            [todo],
-            [todo, deadline],
-            [todo, {**deadline, "done": True}],
-            [todo, deadline],
-            [todo, noted_deadline],
-            [noted_deadline],
-            [noted_deadline],
+            [],                                                   # todo read book
+            [todo],                                               # deadline report
+            [todo, deadline],                                     # deadline abstract
+            [todo, deadline, abstract],                           # mark 2
+            [todo, {**deadline, "done": True}, abstract],           # unmark 2
+            [todo, deadline, abstract],                           # note 2
+            [todo, noted_deadline, abstract],                      # delete 1
+            [noted_deadline, abstract],                            # list
+            [noted_deadline, abstract],                            # deadline slides
+            [noted_deadline, abstract, slides],                    # mark 3
+            [noted_deadline, abstract, done_slides],                # deadline licence
+            remaining,                                            # todo another book
+            [*remaining, another_todo],                            # event meeting
+            [*remaining, another_todo, event],                     # recurring plants
+            all_saved,                                            # due March 1
+            all_saved,                                            # due March 3
+            all_saved,                                            # bye
         ]
         self.assertEqual(self._run_session(commands, expected_saved), expected)
-        # A fresh session must reload the remaining task and its note from disk.
+
+        # A fresh session must preserve timing, notes, status, and query results.
+        restart_steps = [
+            (
+                "list",
+                "1. [D][ ]submit report (by: Mar 02 2026)\n"
+                "Note: attach receipts\n"
+                "2. [D][ ]submit abstract (by: Mar 01 2026, 6pm)\n"
+                "3. [D][X]send slides (by: Mar 01 2026, 9pm)\n"
+                "4. [D][ ]renew licence (by: Mar 01 2026)\n"
+                "5. [T][ ]read another book\n"
+                "6. [E][ ]meeting (from: 2026-03-01 to: 2026-03-02)\n"
+                "7. [R][ ]water plants (every: sunday)\n"
+                "That's 6 on your plate.\n",
+            ),
+            (
+                "due 2026-03-01",
+                "1. [D][ ]submit abstract (by: Mar 01 2026, 6pm)\n"
+                "2. [D][X]send slides (by: Mar 01 2026, 9pm)\n"
+                "3. [D][ ]renew licence (by: Mar 01 2026)\n",
+            ),
+            ("bye", ""),
+        ]
+        restart_commands = [command for command, _ in restart_steps]
+        restart_expected = "".join(output for _, output in restart_steps)
         self.assertEqual(
-            self._run_session(["list", "bye"]),
-            "1. [D][ ]submit report (by: friday)\n"
-            "Note: attach receipts\n"
-            "That's 1 on your plate.\n",
+            self._run_session(restart_commands, [all_saved] * len(restart_steps)),
+            restart_expected,
         )
 
     def test_invalid_inputs(self) -> None:

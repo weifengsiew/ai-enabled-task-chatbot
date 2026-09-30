@@ -1,9 +1,6 @@
 """Command-line entry point for bao."""
-<<<<<<< HEAD
 import json
-=======
 from datetime import date, datetime, time
->>>>>>> stage-8
 import re
 from pathlib import Path
 
@@ -46,13 +43,10 @@ class Task:
         self.note = None
         self.task_type = task_type
         self.day = None
-<<<<<<< HEAD
         self.start: str | None = None
         self.end: str | None = None
-=======
         self.due_date: date | None = None
         self.due_time: time | None = None
->>>>>>> stage-8
 
     def mark_done(self) -> None:
         """
@@ -185,7 +179,7 @@ class Tasks:
 
     def _save_tasks(self) -> None:
         """
-        Saves the task list to data/tasks.json.
+        Saves the task list to data/tasks.json, encoding deadline values as ISO text.
         Creates the data directory if needed.
 
         Returns:
@@ -205,13 +199,15 @@ class Tasks:
                 "day": task.day,
                 "start": task.start,
                 "end": task.end,
+                "due_date": task.due_date.isoformat() if task.due_date is not None else None,
+                "due_time": task.due_time.isoformat() if task.due_time is not None else None,
             })
 
         path.write_text(json.dumps(records, indent=2), encoding="utf-8")
 
     def _load_tasks(self) -> None:
         """
-        Loads the task list from data/tasks.json.
+        Loads saved tasks, converting ISO deadline text back to dates and times.
         Creates an empty save file if it does not exist.
 
         Returns:
@@ -233,6 +229,10 @@ class Tasks:
             task.day = record["day"]
             task.start = record.get("start")
             task.end = record.get("end")
+            due_date = record.get("due_date")
+            due_time = record.get("due_time")
+            task.due_date = date.fromisoformat(due_date) if due_date is not None else None
+            task.due_time = time.fromisoformat(due_time) if due_time is not None else None
             loaded_tasks.append(task)
 
         self.tasks = loaded_tasks
