@@ -380,3 +380,5 @@ Introduce `Tasks` in `tasks.py` to own the dictionary collection and its operati
 
 - Moved collection operations into `Tasks`, updated callers, and retained dictionary storage through `to_list()`. Loading and reset preserve the shared collection instance.
 - All **13 supplied tests passed unchanged**. Verified collection ownership, invalid-index guards, queries, exact saved JSON, and standalone restart.
+
+### THE END
