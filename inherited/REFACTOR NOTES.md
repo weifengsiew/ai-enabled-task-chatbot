@@ -290,3 +290,33 @@ Preserve existing behavior and run the supplied tests without modifying them.
 
 - Added `validate_task_index()`, `clear_completed()`, and `find_tasks()` to `tasklist.py` and reused them in the relevant handlers, preserving existing behavior.
 - All **13 supplied tests passed unchanged**. Standalone task-list operations and exact output were also verified.
+
+## refactor step 17
+
+Extract three more operations into `tasklist.py`:
+
+- `due_tasks(tasks: list[dict[str, Any]], wanted: date) -> list[dict[str, Any]]`: move deadline filtering and stored-date conversion out of `handle_due()`, returning matches in their existing order.
+- `set_done(tasks: list[dict[str, Any]], index: int, done: bool) -> None`: validate the index with `validate_task_index()` and update completion state in place.
+- `set_note(tasks: list[dict[str, Any]], index: int, note: str) -> None`: validate the index with the same helper and replace the note in place.
+
+Handlers retain missing-task errors, confirmation display, and saving. Preserve existing behavior and run the supplied tests without modifying them.
+
+### Step 17 results
+
+- Added `due_tasks()`, `set_done()`, and `set_note()` and called them from the corresponding handlers, preserving selection order, mutations, and existing messages. Stored-date conversion now lives in tasklist.
+- All **13 supplied tests passed unchanged**.
+
+## refactor step 18
+
+Extract three operations into `tasklist.py`:
+
+- `delete_task(tasks: list[dict[str, Any]], index: int) -> dict[str, Any]`: combine index validation and removal, returning the removed task for confirmation.
+- `add_todo(tasks: list[dict[str, Any]], description: str) -> dict[str, Any]`: construct and append a to-do task with the existing defaults, returning the new task for display.
+- `add_deadline(tasks: list[dict[str, Any]], description: str, when: datetime) -> dict[str, Any]`: construct and append a deadline task, including ISO date conversion and existing defaults, returning the new task for display.
+
+Handlers retain error messages, confirmation display, and saving. Preserve existing behavior and run the supplied tests without modifying them.
+
+### Step 18 results
+
+- Added `delete_task()`, `add_todo()`, and `add_deadline()` and called them from the corresponding handlers, preserving task defaults, stored dates, and existing behavior.
+- All **13 supplied tests passed unchanged**.

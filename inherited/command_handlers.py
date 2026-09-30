@@ -1,6 +1,5 @@
 """Command handlers extracted from the inherited Bao input loop."""
 
-from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -17,7 +16,16 @@ if __package__:
         parse_todo,
     )
     from .storage import save_tasks
-    from .tasklist import clear_completed, find_tasks, validate_task_index
+    from .tasklist import (
+        add_deadline,
+        add_todo,
+        clear_completed,
+        delete_task,
+        due_tasks,
+        find_tasks,
+        set_done,
+        set_note,
+    )
     from .ui import (
         format_task,
         format_task_summary,
@@ -41,7 +49,16 @@ else:
         parse_todo,
     )
     from storage import save_tasks
-    from tasklist import clear_completed, find_tasks, validate_task_index
+    from tasklist import (
+        add_deadline,
+        add_todo,
+        clear_completed,
+        delete_task,
+        due_tasks,
+        find_tasks,
+        set_done,
+        set_note,
+    )
     from ui import (
         format_task,
         format_task_summary,
@@ -106,8 +123,7 @@ def handle_todo(line: str, tasks: list[dict[str, Any]], data_file: Path) -> None
         print(str(error))
         return
     # Tasklist: build the task from parsed values and append it to the list.
-    task = {"kind": "todo", "description": description, "done": False, "note": ""}
-    tasks.append(task)
+    task = add_todo(tasks, description)
     # UI: display the added task.
     show_added(task)
     # Storage: create the destination directory and save the task list as JSON.
@@ -133,14 +149,7 @@ def handle_deadline(line: str, tasks: list[dict[str, Any]], data_file: Path) -> 
         print(str(error))
         return
     # Tasklist: build the task from parsed values and append it to the list.
-    task = {
-        "kind": "deadline",
-        "description": description,
-        "done": False,
-        "note": "",
-        "when": parsed.isoformat(),
-    }
-    tasks.append(task)
+    task = add_deadline(tasks, description, parsed)
     # UI: display the added task.
     show_added(task)
     # Storage: create the destination directory and save the task list as JSON.
@@ -235,16 +244,14 @@ def handle_mark_unmark(line: str, tasks: list[dict[str, Any]], data_file: Path) 
         # UI: display the parser's input error.
         print(str(error))
         return
-    # Tasklist: check that the requested task exists in the current list.
+    # Tasklist: validate the index and update the completion state.
     try:
-        validate_task_index(tasks, index)
+        set_done(tasks, index, command == "mark")
     except IndexError:
         # UI: preserve the task number exactly as entered in the error message.
         number_text = line.split()[1]
         print(f"No task {number_text}.")
         return
-    # Tasklist: update the selected task's completion state.
-    tasks[index]["done"] = command == "mark"
     # UI: format and display the updated completion state and description.
     show_marked(tasks[index])
     # Storage: create the destination directory and save the task list as JSON.
@@ -269,16 +276,14 @@ def handle_note(line: str, tasks: list[dict[str, Any]], data_file: Path) -> None
         # UI: display the parser's input error.
         print(str(error))
         return
-    # Tasklist: check that the requested task exists in the current list.
+    # Tasklist: validate the index and replace the note.
     try:
-        validate_task_index(tasks, index)
+        set_note(tasks, index, note)
     except IndexError:
         # UI: preserve the task number exactly as entered in the error message.
         number_text = line.split(maxsplit=2)[1]
         print(f"No task {number_text}.")
         return
-    # Tasklist: replace the selected task's note.
-    tasks[index]["note"] = note
     # UI: display the task and its updated note.
     show_noted(tasks[index])
     # Storage: create the destination directory and save the task list as JSON.
@@ -303,16 +308,14 @@ def handle_delete(line: str, tasks: list[dict[str, Any]], data_file: Path) -> No
         # UI: display the parser's input error.
         print(str(error))
         return
-    # Tasklist: check that the requested task exists in the current list.
+    # Tasklist: validate the index and remove the task for confirmation.
     try:
-        validate_task_index(tasks, index)
+        removed = delete_task(tasks, index)
     except IndexError:
         # UI: preserve the task number exactly as entered in the error message.
         number_text = line.split()[1]
         print(f"No task {number_text}.")
         return
-    # Tasklist: remove the selected task and retain it for the confirmation.
-    removed = tasks.pop(index)
     # UI: display the removed task and the remaining task count.
     show_deleted(removed, len(tasks))
     # Storage: create the destination directory and save the task list as JSON.
@@ -383,12 +386,7 @@ def handle_due(line: str, tasks: list[dict[str, Any]]) -> None:
         print(str(error))
         return
     # Tasklist: select deadlines by their stored due date.
-    matches = [
-        task
-        for task in tasks
-        if task["kind"] == "deadline"
-        and datetime.fromisoformat(task["when"]).date() == wanted
-    ]
+    matches = due_tasks(tasks, wanted)
     # UI: display an empty-result message when the search found no tasks.
     if not matches:
         print("Nothing due that day.")
