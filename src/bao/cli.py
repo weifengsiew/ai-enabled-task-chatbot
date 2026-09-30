@@ -116,13 +116,13 @@ class Tasks:
         self.tasks: list[Task] = []
 
     @staticmethod
-    def _check_task_command(
+    def _match_command(
         user_response: str,
         pattern: str,
         usage: str,
     ) -> re.Match[str] | None:
         """
-        Checks the entire command against a regex pattern.
+        Matches the entire command against a regex pattern.
         Prints the usage message if the command does not match.
 
         Args:
@@ -140,6 +140,30 @@ class Tasks:
         if match is None:
             print(usage)
         return match
+
+    def _check_task_number(self, task_number: int) -> bool:
+        """
+        Checks whether a task number refers to an existing task.
+        Prints guidance if the number is invalid.
+
+        Args:
+        -----
+        task_number (int): The task's position in the list, starting at 1.
+
+        Returns:
+        --------
+        bool: True if the task exists, otherwise False.
+        """
+        if 1 <= task_number <= len(self.tasks):
+            return True
+
+        if self.tasks:
+            message = f"Choose a number from 1 to {len(self.tasks)}."
+        else:
+            message = "There are no tasks yet."
+
+        print(f"No task {task_number}. {message}")
+        return False
 
     def _append_task(self, task: Task) -> None:
         """
@@ -169,7 +193,7 @@ class Tasks:
         --------
         None.
         """
-        match = self._check_task_command(
+        match = self._match_command(
             user_response,
             r"^todo\s+(.+)$",
             "Use: todo <description>",
@@ -197,7 +221,7 @@ class Tasks:
         --------
         None.
         """
-        match = self._check_task_command(
+        match = self._match_command(
             user_response,
             r"^recurring\s+(.+?)\s+/every\s+(\w+)$",
             "Use: recurring <description> /every <day>",
@@ -228,7 +252,7 @@ class Tasks:
         --------
         None.
         """
-        match = self._check_task_command(
+        match = self._match_command(
             user_response,
             r"^deadline\s+(.+?)\s+/by\s+(\w+)$",
             "Use: deadline <description> /by <day>",
@@ -259,7 +283,7 @@ class Tasks:
         --------
         None.
         """
-        match = self._check_task_command(
+        match = self._match_command(
             user_response,
             r"^event\s+(.+?)\s+/from\s+(.+?)\s+/to\s+(.+)$",
             "Use: event <description> /from <start> /to <end>",
@@ -342,25 +366,23 @@ class Tasks:
         --------
         None.
         """
-        mark_pattern = r"^mark\s+(\d+)$"
-        match = re.fullmatch(mark_pattern, user_response)
+        match = self._match_command(
+            user_response,
+            r"^mark\s+(\d+)$",
+            "Use: mark <number>",
+        )
 
-        if not match:
-            print("Use: mark <number>")
+        if match is None:
             return
 
         task_number = int(match.group(1))
 
-        if 1 <= task_number <= len(self.tasks):
-            self.tasks[task_number - 1].mark_done()
-            print("Done:")
-            print(self.tasks[task_number - 1])
-        else:
-            if self.tasks:
-                invalid_task_number_message = f"Choose a number from 1 to {len(self.tasks)}."
-            else:
-                invalid_task_number_message = "There are no tasks yet."
-            print(f"No task {task_number}. {invalid_task_number_message}")
+        if not self._check_task_number(task_number):
+            return
+
+        task = self.tasks[task_number - 1]
+        task.mark_done()
+        print(f"Done:\n{task}")
 
     def unmark_task(self, user_response: str) -> None:
         """
@@ -376,25 +398,23 @@ class Tasks:
         --------
         None.
         """
-        unmark_pattern = r"^unmark\s+(\d+)$"
-        match = re.fullmatch(unmark_pattern, user_response)
+        match = self._match_command(
+            user_response,
+            r"^unmark\s+(\d+)$",
+            "Use: unmark <number>",
+        )
 
-        if not match:
-            print("Use: unmark <number>")
+        if match is None:
             return
 
         task_number = int(match.group(1))
 
-        if 1 <= task_number <= len(self.tasks):
-            self.tasks[task_number - 1].unmark_done()
-            print("Not done:")
-            print(self.tasks[task_number - 1])
-        else:
-            if self.tasks:
-                invalid_task_number_message = f"Choose a number from 1 to {len(self.tasks)}."
-            else:
-                invalid_task_number_message = "There are no tasks yet."
-            print(f"No task {task_number}. {invalid_task_number_message}")
+        if not self._check_task_number(task_number):
+            return
+
+        task = self.tasks[task_number - 1]
+        task.unmark_done()
+        print(f"Not done:\n{task}")
 
     def note_task(self, user_response: str) -> None:
         """
@@ -410,26 +430,24 @@ class Tasks:
         --------
         None.
         """
-        note_pattern = r"^note\s+(\d+)\s+(.+)$"
-        match = re.fullmatch(note_pattern, user_response)
+        match = self._match_command(
+            user_response,
+            r"^note\s+(\d+)\s+(.+)$",
+            "Use: note <number> <note>",
+        )
 
-        if not match:
-            print("Use: note <number> <note>")
+        if match is None:
             return
 
         task_number = int(match.group(1))
         note = match.group(2)
 
-        if 1 <= task_number <= len(self.tasks):
-            self.tasks[task_number - 1].add_note(note)
-            print("Noted:")
-            print(self.tasks[task_number - 1])
-        else:
-            if self.tasks:
-                invalid_task_number_message = f"Choose a number from 1 to {len(self.tasks)}."
-            else:
-                invalid_task_number_message = "There are no tasks yet."
-            print(f"No task {task_number}. {invalid_task_number_message}")
+        if not self._check_task_number(task_number):
+            return
+
+        task = self.tasks[task_number - 1]
+        task.add_note(note)
+        print(f"Noted:\n{task}")
 
     def delete_task(self, user_response: str) -> None:
         """
@@ -445,26 +463,25 @@ class Tasks:
         --------
         None.
         """
-        match = re.fullmatch(r"^delete\s+(\d+)$", user_response)
+        match = self._match_command(
+            user_response,
+            r"^delete\s+(\d+)$",
+            "Use: delete <number>",
+        )
 
         if match is None:
-            print("Use: delete <number>")
             return
 
         task_number = int(match.group(1))
 
-        if 1 <= task_number <= len(self.tasks):
-            task = self.tasks.pop(task_number - 1)
-            print(f"Deleted:\n{task}")
-            remaining = len(self.tasks)
-            label = "task" if remaining == 1 else "tasks"
-            print(f"{remaining} {label} left.")
-        else:
-            if self.tasks:
-                message = f"Choose a number from 1 to {len(self.tasks)}."
-            else:
-                message = "There are no tasks yet."
-            print(f"No task {task_number}. {message}")
+        if not self._check_task_number(task_number):
+            return
+
+        task = self.tasks.pop(task_number - 1)
+        print(f"Deleted:\n{task}")
+        remaining = len(self.tasks)
+        label = "task" if remaining == 1 else "tasks"
+        print(f"{remaining} {label} left.")
 
 def chat() -> None:
     """
