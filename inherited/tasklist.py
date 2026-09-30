@@ -4,6 +4,10 @@ from datetime import date, datetime
 from typing import Any
 
 
+class TaskNotFoundError(IndexError):
+    """The requested task index is outside the current task list."""
+
+
 def validate_task_index(tasks: list[dict[str, Any]], index: int) -> None:
     """Check that an index identifies a task without changing the list.
 
@@ -15,10 +19,10 @@ def validate_task_index(tasks: list[dict[str, Any]], index: int) -> None:
         None.
 
     Raises:
-        IndexError: If the index is negative or outside the task list.
+        TaskNotFoundError: If the index is negative or outside the task list.
     """
     if index < 0 or index >= len(tasks):
-        raise IndexError(index)
+        raise TaskNotFoundError(index)
 
 
 def clear_completed(tasks: list[dict[str, Any]]) -> int:
@@ -78,7 +82,7 @@ def set_done(tasks: list[dict[str, Any]], index: int, done: bool) -> None:
         None.
 
     Raises:
-        IndexError: If the index is negative or outside the task list.
+        TaskNotFoundError: If the index is negative or outside the task list.
     """
     validate_task_index(tasks, index)
     tasks[index]["done"] = done
@@ -96,7 +100,7 @@ def set_note(tasks: list[dict[str, Any]], index: int, note: str) -> None:
         None.
 
     Raises:
-        IndexError: If the index is negative or outside the task list.
+        TaskNotFoundError: If the index is negative or outside the task list.
     """
     validate_task_index(tasks, index)
     tasks[index]["note"] = note
@@ -113,7 +117,7 @@ def delete_task(tasks: list[dict[str, Any]], index: int) -> dict[str, Any]:
         The removed task for confirmation display.
 
     Raises:
-        IndexError: If the index is negative or outside the task list.
+        TaskNotFoundError: If the index is negative or outside the task list.
     """
     validate_task_index(tasks, index)
     return tasks.pop(index)

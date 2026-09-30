@@ -8,11 +8,13 @@ if __package__:
     from . import command_handlers
     from .parser import InputError
     from .storage import load_tasks
+    from .tasklist import TaskNotFoundError
     from .ui import show_error
 else:
     import command_handlers
     from parser import InputError
     from storage import load_tasks
+    from tasklist import TaskNotFoundError
     from ui import show_error
 
 
@@ -68,6 +70,10 @@ def run() -> None:
                 command_handlers.handle_unknown_command()
         except InputError as error:
             show_error(str(error))
+        except TaskNotFoundError:
+            # Preserve the task number exactly as entered after successful parsing.
+            number_text = line.split(maxsplit=2)[1]
+            show_error(f"No task {number_text}.")
 
 
 if __name__ == "__main__":

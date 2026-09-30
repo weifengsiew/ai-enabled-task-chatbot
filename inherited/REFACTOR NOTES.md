@@ -344,3 +344,12 @@ Move three display blocks into `ui.py`: `show_due_tasks(tasks)` for numbered dea
 
 - Added all three UI helpers and replaced the corresponding handler display blocks, preserving output.
 - All **13 supplied tests passed unchanged**.
+
+## refactor step 21
+
+Define `TaskNotFoundError(IndexError)` in `tasklist.py` and raise it for invalid task indexes. Catch it once in `run()`, preserving the original task-number text and displaying the existing message through `show_error()`. Remove the three handler catches; keep unrelated `IndexError`s propagating and run the supplied tests unchanged.
+
+### Step 21 results
+
+- Added `TaskNotFoundError`, centralized its catch in `run()`, and removed three handler catches.
+- All **13 supplied tests passed unchanged**. Verified original number text, continued processing, no save on failure, and propagation of unrelated `IndexError`s.

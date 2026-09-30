@@ -217,13 +217,7 @@ def handle_mark_unmark(line: str, tasks: list[dict[str, Any]], data_file: Path) 
     # Parser: identify the command and parse its task-number argument.
     command, index = parse_mark_unmark(line)
     # Tasklist: validate the index and update the completion state.
-    try:
-        set_done(tasks, index, command == "mark")
-    except IndexError:
-        # UI: preserve the task number exactly as entered in the error message.
-        number_text = line.split()[1]
-        print(f"No task {number_text}.")
-        return
+    set_done(tasks, index, command == "mark")
     # UI: format and display the updated completion state and description.
     show_marked(tasks[index])
     # Storage: create the destination directory and save the task list as JSON.
@@ -244,13 +238,7 @@ def handle_note(line: str, tasks: list[dict[str, Any]], data_file: Path) -> None
     # Parser: extract the task index and preserve the remaining note text.
     index, note = parse_note(line)
     # Tasklist: validate the index and replace the note.
-    try:
-        set_note(tasks, index, note)
-    except IndexError:
-        # UI: preserve the task number exactly as entered in the error message.
-        number_text = line.split(maxsplit=2)[1]
-        print(f"No task {number_text}.")
-        return
+    set_note(tasks, index, note)
     # UI: display the task and its updated note.
     show_noted(tasks[index])
     # Storage: create the destination directory and save the task list as JSON.
@@ -271,13 +259,7 @@ def handle_delete(line: str, tasks: list[dict[str, Any]], data_file: Path) -> No
     # Parser: require and parse a single task-number argument.
     index = parse_delete(line)
     # Tasklist: validate the index and remove the task for confirmation.
-    try:
-        removed = delete_task(tasks, index)
-    except IndexError:
-        # UI: preserve the task number exactly as entered in the error message.
-        number_text = line.split()[1]
-        print(f"No task {number_text}.")
-        return
+    removed = delete_task(tasks, index)
     # UI: display the removed task and the remaining task count.
     show_deleted(removed, len(tasks))
     # Storage: create the destination directory and save the task list as JSON.
