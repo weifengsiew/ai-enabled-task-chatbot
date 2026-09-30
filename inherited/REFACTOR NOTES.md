@@ -104,3 +104,18 @@ Extracted `save_tasks(tasks, data_file)` into `storage.py` and replaced the dupl
 - Loading remains in `bao.py`, so the storage responsibility is only partly separated. Handlers still combine parser, tasklist, and UI responsibilities.
 - `uv run python -m pytest inherited/tests`: **13 passed**; supplied tests unchanged.
 - Standalone script execution and exact saved JSON were also verified.
+
+## refactor step 4
+
+Extract file loading from `run()` in `bao.py` into `load_tasks(data_file: Path) -> list[dict[str, Any]]` in `storage.py`.
+
+The function checks whether the file exists, reads and decodes its JSON, and returns the task data. A missing file returns an empty list. Read and JSON decoding errors propagate to `bao.py`, which handles them and displays the existing error message.
+
+`run()` clears `TASKS` and extends it with the returned data. This places file access in `storage.py` while keeping task-list state and conversation handling in the caller.
+
+Preserve existing behavior and verify it with the supplied tests.
+
+### Step 4 results
+
+- Extracted `load_tasks()` into `storage.py`; `bao.py` retains task-list updates and error messages.
+- All **13 supplied tests passed unchanged**. Missing-file handling, error propagation, and standalone script error display were also verified.

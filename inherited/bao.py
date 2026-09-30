@@ -6,8 +6,10 @@ from typing import Any
 
 if __package__:
     from . import command_handlers
+    from .storage import load_tasks
 else:
     import command_handlers
+    from storage import load_tasks
 
 
 TASKS: list[dict[str, Any]] = []
@@ -17,11 +19,10 @@ DATA_FILE = Path("data/inherited-tasks.json")
 def run() -> None:
     """Load saved tasks and process user input until exit; return None."""
     TASKS.clear()
-    if DATA_FILE.exists():
-        try:
-            TASKS.extend(json.loads(DATA_FILE.read_text()))
-        except (OSError, json.JSONDecodeError):
-            print("Could not read saved tasks. Starting with an empty list.")
+    try:
+        TASKS.extend(load_tasks(DATA_FILE))
+    except (OSError, json.JSONDecodeError):
+        print("Could not read saved tasks. Starting with an empty list.")
 
     print("bao here. What needs doing?")
     while True:
