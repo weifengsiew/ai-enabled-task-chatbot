@@ -1,5 +1,6 @@
 import builtins
 import json
+from pathlib import Path
 
 import pytest
 
@@ -7,19 +8,29 @@ from inherited import bao
 
 
 @pytest.fixture(autouse=True)
-def isolated_data_file(tmp_path, monkeypatch):
+def isolated_data_file(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     monkeypatch.setattr(bao, "DATA_FILE", tmp_path / "data" / "tasks.json")
     bao.TASKS.clear()
 
 
-def run_session(monkeypatch, capsys, *commands):
+def run_session(
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+    *commands: str,
+) -> str:
     entries = iter(commands)
     monkeypatch.setattr(builtins, "input", lambda _prompt="": next(entries))
     bao.run()
     return capsys.readouterr().out
 
 
-def test_empty_list_and_blank_input_keep_the_conversation_running(monkeypatch, capsys):
+def test_empty_list_and_blank_input_keep_the_conversation_running(
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
     output = run_session(monkeypatch, capsys, "", "list", "bye")
 
     assert "Nothing there." in output
@@ -27,7 +38,10 @@ def test_empty_list_and_blank_input_keep_the_conversation_running(monkeypatch, c
     assert output.endswith("Later.\n")
 
 
-def test_adds_and_lists_every_task_kind(monkeypatch, capsys):
+def test_adds_and_lists_every_task_kind(
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
     output = run_session(
         monkeypatch,
         capsys,
@@ -45,7 +59,10 @@ def test_adds_and_lists_every_task_kind(monkeypatch, capsys):
     assert "4.[R][ ] wash the mugs (every: monday)" in output
 
 
-def test_changes_state_and_attaches_a_note(monkeypatch, capsys):
+def test_changes_state_and_attaches_a_note(
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
     output = run_session(
         monkeypatch,
         capsys,
@@ -62,7 +79,10 @@ def test_changes_state_and_attaches_a_note(monkeypatch, capsys):
     assert "Not done:\n  [ ] read the paper" in output
 
 
-def test_deletes_and_clears_tasks(monkeypatch, capsys):
+def test_deletes_and_clears_tasks(
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
     output = run_session(
         monkeypatch,
         capsys,
@@ -81,7 +101,10 @@ def test_deletes_and_clears_tasks(monkeypatch, capsys):
     assert "1.[T][ ] third" in output
 
 
-def test_finds_partial_text_without_caring_about_case(monkeypatch, capsys):
+def test_finds_partial_text_without_caring_about_case(
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
     output = run_session(
         monkeypatch,
         capsys,
@@ -96,7 +119,10 @@ def test_finds_partial_text_without_caring_about_case(monkeypatch, capsys):
     assert "2.[ ] buy fruit" not in output
 
 
-def test_lists_deadlines_due_on_one_day(monkeypatch, capsys):
+def test_lists_deadlines_due_on_one_day(
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
     output = run_session(
         monkeypatch,
         capsys,
@@ -111,7 +137,10 @@ def test_lists_deadlines_due_on_one_day(monkeypatch, capsys):
     assert "2.[D][ ] later task" not in output
 
 
-def test_saves_changes_and_loads_them_on_the_next_run(monkeypatch, capsys):
+def test_saves_changes_and_loads_them_on_the_next_run(
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
     run_session(monkeypatch, capsys, "todo survive restart", "bye")
     bao.TASKS.clear()
 
@@ -134,8 +163,11 @@ def test_saves_changes_and_loads_them_on_the_next_run(monkeypatch, capsys):
     ],
 )
 def test_bad_input_reports_an_error_and_keeps_running(
-    monkeypatch, capsys, command, message
-):
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+    command: str,
+    message: str,
+) -> None:
     output = run_session(monkeypatch, capsys, command, "list", "bye")
 
     assert message in output

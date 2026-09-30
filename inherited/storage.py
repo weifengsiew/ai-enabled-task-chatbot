@@ -2,7 +2,7 @@
 
 import json
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 
 def save_tasks(tasks: list[dict[str, Any]], data_file: Path) -> None:
@@ -34,4 +34,4 @@ def load_tasks(data_file: Path) -> list[dict[str, Any]]:
     """
     if not data_file.exists():
         return []
-    return json.loads(data_file.read_text())
+    return cast(list[dict[str, Any]], json.loads(data_file.read_text()))

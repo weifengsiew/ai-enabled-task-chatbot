@@ -21,3 +21,26 @@ Mypy follows the relative package imports. At runtime, `TYPE_CHECKING` is false,
 - `git diff --check`: passed for the code fixes.
 
 Existing mypy dependency changes in `pyproject.toml` and `uv.lock` were retained. No commit or push performed.
+
+## Strict-mode fixes
+
+Enabled `[tool.mypy] strict = true` in `pyproject.toml`. This exposed 20 further errors in two inherited files.
+
+- no-any-return: use `cast(list[dict[str, Any]], ...)` for the JSON result in `inherited/storage.py`. This documents the expected structure without adding runtime validation.
+- no-untyped-def: annotate `isolated_data_file` with `Path`, `pytest.MonkeyPatch`, and a `None` return type.
+- no-untyped-def / no-untyped-call: annotate `run_session` with `pytest.MonkeyPatch`, `pytest.CaptureFixture[str]`, string commands, and a `str` return type.
+- no-untyped-def: annotate the seven ordinary inherited test functions with fixture types and `None` returns.
+- no-untyped-def: annotate the parametrized test's fixtures, string arguments, and `None` return.
+
+Test commands and assertions are unchanged.
+
+## Strict-mode results
+
+- `uv run mypy . > mypy-report.txt 2>&1`: no issues in 13 source files; report refreshed, down from 20 strict-mode errors to 0.
+- `uv run ruff check .`: all checks passed.
+- `uv run ruff format inherited/storage.py inherited/tests/test_bao.py`: both files already formatted.
+- `uv run pytest tests -q`: 6 passed.
+- `uv run python -m pytest inherited/tests -q`: 13 passed.
+- `git diff --check`: passed for the code fixes.
+
+No commit or push performed.
