@@ -158,3 +158,14 @@ Preserve existing output and verify it with the supplied tests.
 
 - Extracted `show_added()` into `ui.py` and reused it in all four add handlers, preserving confirmation output.
 - All **13 supplied tests passed unchanged**.
+
+## refactor step 8
+
+Reuse `format_task()` in `handle_due()` to replace its separate deadline formatting and completion-box logic. Keep numbering in the handler and preserve existing output.
+
+This centralizes due-task display formatting in `ui.py`. Verify the change with the supplied tests.
+
+### Step 8 results
+
+- `handle_due()` now uses `format_task()`, preserving numbering and output. Removed the unused `format_deadline` imports from the handlers module.
+- All **13 supplied tests passed unchanged**.

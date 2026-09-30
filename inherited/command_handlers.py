@@ -6,10 +6,10 @@ from typing import Any
 
 if __package__:
     from .storage import save_tasks
-    from .ui import format_deadline, format_task, show_added
+    from .ui import format_task, show_added
 else:
     from storage import save_tasks
-    from ui import format_deadline, format_task, show_added
+    from ui import format_task, show_added
 
 
 def handle_empty_input() -> None:
@@ -408,10 +408,7 @@ def handle_due(line: str, tasks: list[dict[str, Any]]) -> None:
         print("Nothing due that day.")
     # UI: number, format, and display the matching tasks.
     for number, task in enumerate(matches, 1):
-        due = datetime.fromisoformat(task["when"])
-        formatted = format_deadline(due)
-        box = "X" if task["done"] else " "
-        print(f'{number}.[D][{box}] {task["description"]} (by: {formatted})')
+        print(f"{number}.{format_task(task)}")
 
 
 def handle_unknown_command() -> None:
