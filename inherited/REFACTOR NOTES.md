@@ -81,10 +81,26 @@ Added comments to `command_handlers.py` identifying `ui`, `parser`, `tasklist`, 
 
 Only comments were added. All original code lines were preserved, and the Python AST was unchanged.
 
-### Reflections and observations
+### Step 3 discussion
 
 - Extracting handlers shortened `run()`, but individual handlers still combine input parsing, task operations, displayed messages, and saving.
 - Input validation and error display are closely coupled: a handler detects invalid input and immediately prints a message.
 - Checking whether a task number is an integer belongs to `parser`; checking whether that task exists belongs to `tasklist`.
 - Date conversion serves different responsibilities: interpreting user input belongs to `parser`, selecting deadlines belongs to `tasklist`, and formatting dates for display belongs to `ui`.
 - The same two-line save block appears in eight handlers, making storage a clear first extraction.
+
+## refactor step 3
+
+Extract the duplicated two-line save block into `save_tasks(tasks, data_file)` in `storage.py`. Replace the block in all eight handlers with calls to this function.
+
+Preserve directory creation, save timing, and JSON format. Run the supplied tests without modifying them.
+
+### Step 3 results
+
+Extracted `save_tasks(tasks, data_file)` into `storage.py` and replaced the duplicated save block in all eight handlers with calls to it.
+
+- Directory creation and JSON serialization now have one implementation. The `json` import moved from `command_handlers.py` to `storage.py`.
+- Handlers still decide when to save; `storage.py` owns how task data is written. Save timing, directory creation, and JSON format are unchanged.
+- Loading remains in `bao.py`, so the storage responsibility is only partly separated. Handlers still combine parser, tasklist, and UI responsibilities.
+- `uv run python -m pytest inherited/tests`: **13 passed**; supplied tests unchanged.
+- Standalone script execution and exact saved JSON were also verified.

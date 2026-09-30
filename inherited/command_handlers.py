@@ -1,9 +1,13 @@
 """Command handlers extracted from the inherited Bao input loop."""
 
-import json
 from datetime import datetime
 from pathlib import Path
 from typing import Any
+
+if __package__:
+    from .storage import save_tasks
+else:
+    from storage import save_tasks
 
 
 def handle_empty_input() -> None:
@@ -95,8 +99,7 @@ def handle_todo(line: str, tasks: list[dict[str, Any]], data_file: Path) -> None
     print("Added:")
     print(f"  [T][ ] {description}")
     # Storage: create the destination directory and save the task list as JSON.
-    data_file.parent.mkdir(parents=True, exist_ok=True)
-    data_file.write_text(json.dumps(tasks, indent=2))
+    save_tasks(tasks, data_file)
 
 
 def handle_deadline(line: str, tasks: list[dict[str, Any]], data_file: Path) -> None:
@@ -154,8 +157,7 @@ def handle_deadline(line: str, tasks: list[dict[str, Any]], data_file: Path) -> 
     print("Added:")
     print(f"  [D][ ] {description} (by: {formatted})")
     # Storage: create the destination directory and save the task list as JSON.
-    data_file.parent.mkdir(parents=True, exist_ok=True)
-    data_file.write_text(json.dumps(tasks, indent=2))
+    save_tasks(tasks, data_file)
 
 
 def handle_event(line: str, tasks: list[dict[str, Any]], data_file: Path) -> None:
@@ -196,8 +198,7 @@ def handle_event(line: str, tasks: list[dict[str, Any]], data_file: Path) -> Non
     print("Added:")
     print(f"  [E][ ] {description} (from: {start} to: {end})")
     # Storage: create the destination directory and save the task list as JSON.
-    data_file.parent.mkdir(parents=True, exist_ok=True)
-    data_file.write_text(json.dumps(tasks, indent=2))
+    save_tasks(tasks, data_file)
 
 
 def handle_recurring(line: str, tasks: list[dict[str, Any]], data_file: Path) -> None:
@@ -236,8 +237,7 @@ def handle_recurring(line: str, tasks: list[dict[str, Any]], data_file: Path) ->
     print("Added:")
     print(f"  [R][ ] {description} (every: {every})")
     # Storage: create the destination directory and save the task list as JSON.
-    data_file.parent.mkdir(parents=True, exist_ok=True)
-    data_file.write_text(json.dumps(tasks, indent=2))
+    save_tasks(tasks, data_file)
 
 
 def handle_mark_unmark(line: str, tasks: list[dict[str, Any]], data_file: Path) -> None:
@@ -277,8 +277,7 @@ def handle_mark_unmark(line: str, tasks: list[dict[str, Any]], data_file: Path) 
     print("Done:" if command == "mark" else "Not done:")
     print(f'  [{box}] {tasks[index]["description"]}')
     # Storage: create the destination directory and save the task list as JSON.
-    data_file.parent.mkdir(parents=True, exist_ok=True)
-    data_file.write_text(json.dumps(tasks, indent=2))
+    save_tasks(tasks, data_file)
 
 
 def handle_note(line: str, tasks: list[dict[str, Any]], data_file: Path) -> None:
@@ -317,8 +316,7 @@ def handle_note(line: str, tasks: list[dict[str, Any]], data_file: Path) -> None
     print(f'  {tasks[index]["description"]}')
     print(f"  Note: {pieces[2]}")
     # Storage: create the destination directory and save the task list as JSON.
-    data_file.parent.mkdir(parents=True, exist_ok=True)
-    data_file.write_text(json.dumps(tasks, indent=2))
+    save_tasks(tasks, data_file)
 
 
 def handle_delete(line: str, tasks: list[dict[str, Any]], data_file: Path) -> None:
@@ -357,8 +355,7 @@ def handle_delete(line: str, tasks: list[dict[str, Any]], data_file: Path) -> No
     print(f'  {removed["description"]}')
     print(f"{len(tasks)} tasks left.")
     # Storage: create the destination directory and save the task list as JSON.
-    data_file.parent.mkdir(parents=True, exist_ok=True)
-    data_file.write_text(json.dumps(tasks, indent=2))
+    save_tasks(tasks, data_file)
 
 
 def handle_clear(tasks: list[dict[str, Any]], data_file: Path) -> None:
@@ -379,8 +376,7 @@ def handle_clear(tasks: list[dict[str, Any]], data_file: Path) -> None:
     print(f"Cleared {removed} completed tasks.")
     print(f"{len(tasks)} tasks left.")
     # Storage: create the destination directory and save the task list as JSON.
-    data_file.parent.mkdir(parents=True, exist_ok=True)
-    data_file.write_text(json.dumps(tasks, indent=2))
+    save_tasks(tasks, data_file)
 
 
 def handle_find(line: str, tasks: list[dict[str, Any]]) -> None:
