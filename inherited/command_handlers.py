@@ -116,12 +116,7 @@ def handle_todo(line: str, tasks: list[dict[str, Any]], data_file: Path) -> None
         None.
     """
     # Parser: extract the description and check that it is present.
-    try:
-        description = parse_todo(line)
-    except ValueError as error:
-        # UI: display the parser's input error.
-        print(str(error))
-        return
+    description = parse_todo(line)
     # Tasklist: build the task from parsed values and append it to the list.
     task = add_todo(tasks, description)
     # UI: display the added task.
@@ -142,12 +137,7 @@ def handle_deadline(line: str, tasks: list[dict[str, Any]], data_file: Path) -> 
         None.
     """
     # Parser: require a description and /by value, then parse the deadline.
-    try:
-        description, parsed = parse_deadline(line)
-    except ValueError as error:
-        # UI: display the parser's input error.
-        print(str(error))
-        return
+    description, parsed = parse_deadline(line)
     # Tasklist: build the task from parsed values and append it to the list.
     task = add_deadline(tasks, description, parsed)
     # UI: display the added task.
@@ -168,15 +158,7 @@ def handle_event(line: str, tasks: list[dict[str, Any]], data_file: Path) -> Non
         None.
     """
     # Parser: extract the description, start, and end from the event command.
-    try:
-        description, start, end = parse_event(line)
-    except ValueError as error:
-        # Preserve the existing uncaught error for incorrectly ordered separators.
-        if str(error) != "An event needs a description, /from, and /to.":
-            raise
-        # UI: display the parser's input error.
-        print(str(error))
-        return
+    description, start, end = parse_event(line)
     # Tasklist: build the task from parsed values and append it to the list.
     task = {
         "kind": "event",
@@ -205,12 +187,7 @@ def handle_recurring(line: str, tasks: list[dict[str, Any]], data_file: Path) ->
         None.
     """
     # Parser: require a description and /every value.
-    try:
-        description, every = parse_recurring(line)
-    except ValueError as error:
-        # UI: display the parser's input error.
-        print(str(error))
-        return
+    description, every = parse_recurring(line)
     # Tasklist: build the task from parsed values and append it to the list.
     task = {
         "kind": "recurring",
@@ -238,12 +215,7 @@ def handle_mark_unmark(line: str, tasks: list[dict[str, Any]], data_file: Path) 
         None.
     """
     # Parser: identify the command and parse its task-number argument.
-    try:
-        command, index = parse_mark_unmark(line)
-    except ValueError as error:
-        # UI: display the parser's input error.
-        print(str(error))
-        return
+    command, index = parse_mark_unmark(line)
     # Tasklist: validate the index and update the completion state.
     try:
         set_done(tasks, index, command == "mark")
@@ -270,12 +242,7 @@ def handle_note(line: str, tasks: list[dict[str, Any]], data_file: Path) -> None
         None.
     """
     # Parser: extract the task index and preserve the remaining note text.
-    try:
-        index, note = parse_note(line)
-    except ValueError as error:
-        # UI: display the parser's input error.
-        print(str(error))
-        return
+    index, note = parse_note(line)
     # Tasklist: validate the index and replace the note.
     try:
         set_note(tasks, index, note)
@@ -302,12 +269,7 @@ def handle_delete(line: str, tasks: list[dict[str, Any]], data_file: Path) -> No
         None.
     """
     # Parser: require and parse a single task-number argument.
-    try:
-        index = parse_delete(line)
-    except ValueError as error:
-        # UI: display the parser's input error.
-        print(str(error))
-        return
+    index = parse_delete(line)
     # Tasklist: validate the index and remove the task for confirmation.
     try:
         removed = delete_task(tasks, index)
@@ -352,12 +314,7 @@ def handle_find(line: str, tasks: list[dict[str, Any]]) -> None:
         None.
     """
     # Parser: extract the search text and check that it is present.
-    try:
-        query = parse_find(line)
-    except ValueError as error:
-        # UI: display the parser's input error.
-        print(str(error))
-        return
+    query = parse_find(line)
     # Tasklist: find tasks whose descriptions contain the query, ignoring case.
     matches = find_tasks(tasks, query)
     # UI: display an empty-result message when the search found no tasks.
@@ -379,12 +336,7 @@ def handle_due(line: str, tasks: list[dict[str, Any]]) -> None:
         None.
     """
     # Parser: extract and validate the requested calendar date.
-    try:
-        wanted = parse_due(line)
-    except ValueError as error:
-        # UI: display the parser's input error.
-        print(str(error))
-        return
+    wanted = parse_due(line)
     # Tasklist: select deadlines by their stored due date.
     matches = due_tasks(tasks, wanted)
     # UI: display an empty-result message when the search found no tasks.

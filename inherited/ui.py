@@ -139,3 +139,15 @@ def show_deleted(task: dict[str, Any], remaining_count: int) -> None:
     print("Deleted:")
     print(f'  {task["description"]}')
     show_tasks_left(remaining_count)
+
+
+def show_error(message: str) -> None:
+    """Print an error message to the user.
+
+    Args:
+        message: Error text to display without changing its wording.
+
+    Returns:
+        None.
+    """
+    print(message)

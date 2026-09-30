@@ -320,3 +320,18 @@ Handlers retain error messages, confirmation display, and saving. Preserve exist
 
 - Added `delete_task()`, `add_todo()`, and `add_deadline()` and called them from the corresponding handlers, preserving task defaults, stored dates, and existing behavior.
 - All **13 supplied tests passed unchanged**.
+
+## refactor step 19
+
+Centralize expected input-error handling across parser, UI, and coordination:
+
+- Define `InputError(ValueError)` in `parser.py` and raise it for deliberate input-validation failures, distinguishing these from unexpected exceptions without comparing error-message text.
+- Add `show_error(message: str) -> None` to `ui.py` to own error display.
+- Catch `InputError` once around command routing in `run()`, display it through `show_error()`, and continue the input loop. Remove the repeated parsing catches from handlers, allowing expected input errors to propagate to the coordinator.
+
+Keep tasklist `IndexError` handling separate and preserve unexpected exceptions, including the existing event unpacking error. Preserve conversation output and save behavior, and run the supplied tests without modifying them.
+
+### Step 19 results
+
+- Added `InputError` and `show_error()`, centralized the catch in `run()`, and removed nine handler parsing catches plus the event message comparison. Tasklist error handling remains separate.
+- All **13 supplied tests passed unchanged**. Standalone checks verified 15 expected error cases, continued processing and saved state, and propagation of the unexpected event error.
