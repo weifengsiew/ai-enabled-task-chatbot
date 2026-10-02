@@ -1,589 +1,112 @@
-"""Task collection, command handling, and persistence."""
+"""Task-list operations for Bao."""
 
-import json
-import re
 from datetime import date, time
-from pathlib import Path
 
-from .task import Task
+from .storage import load_tasks, save_tasks
+from .task import DeadlineTask, EventTask, RecurringTask, Task, TodoTask
 
 
 class Tasks:
+    """Owns the mixed task list and its state-changing operations."""
+
     def __init__(self) -> None:
-        """
-        Loads saved tasks, creating an empty save file on the first run.
+        """Loads the saved mixed task list."""
+        self.tasks: list[Task] = load_tasks()
 
-        Returns:
-        --------
-        None.
-        """
-        self.tasks: list[Task] = []
-        self._load_tasks()
-
-    def _save_tasks(self) -> None:
-        """
-        Saves the task list to data/tasks.json, encoding deadline values as ISO text.
-        Creates the data directory if needed.
-
-        Returns:
-        --------
-        None.
-        """
-        path = Path("data/tasks.json")
-        path.parent.mkdir(parents=True, exist_ok=True)
-
-        records = []
-        for task in self.tasks:
-            records.append(
-                {
-                    "description": task.description,
-                    "task_type": task.task_type,
-                    "done": task.done,
-                    "note": task.note,
-                    "day": task.day,
-                    "start": task.start,
-                    "end": task.end,
-                    "due_date": task.due_date.isoformat()
-                    if task.due_date is not None
-                    else None,
-                    "due_time": task.due_time.isoformat()
-                    if task.due_time is not None
-                    else None,
-                }
-            )
-
-        path.write_text(json.dumps(records, indent=2), encoding="utf-8")
-
-    def _load_tasks(self) -> None:
-        """
-        Loads saved tasks, converting ISO deadline text back to dates and times.
-        Creates an empty save file if it does not exist.
-
-        Returns:
-        --------
-        None.
-        """
-        path = Path("data/tasks.json")
-        if not path.exists():
-            self._save_tasks()
-            return
-
-        records = json.loads(path.read_text(encoding="utf-8"))
-        loaded_tasks = []
-
-        for record in records:
-            task = Task(record["description"], record["task_type"])
-            task.done = record["done"]
-            task.note = record["note"]
-            task.day = record["day"]
-            task.start = record.get("start")
-            task.end = record.get("end")
-            due_date = record.get("due_date")
-            due_time = record.get("due_time")
-            task.due_date = (
-                date.fromisoformat(due_date) if due_date is not None else None
-            )
-            task.due_time = (
-                time.fromisoformat(due_time) if due_time is not None else None
-            )
-            loaded_tasks.append(task)
-
-        self.tasks = loaded_tasks
-
-    @staticmethod
-    def _match_user_response(
-        user_response: str,
-        pattern: str,
-        usage: str,
-    ) -> re.Match[str] | None:
-        """
-        Matches the entire command against a regex pattern.
-        Prints the usage message if the command does not match.
-
-        Args:
-        -----
-        user_response (str): The command text to check.
-        pattern (str): The regex pattern defining the expected command format.
-        usage (str): The message to print when the command is invalid.
-
-        Returns:
-        --------
-        re.Match[str] | None: The match containing captured fields,
-            or None if the command does not match.
-        """
-        user_response_match = re.fullmatch(pattern, user_response)
-        if user_response_match is None:
-            print(usage)
-        return user_response_match
-
-    def _check_task_number(self, task_number: int) -> bool:
-        """
-        Checks whether a task number refers to an existing task.
-        Prints guidance if the number is invalid.
-
-        Args:
-        -----
-        task_number (int): The task's position in the list, starting at 1.
-
-        Returns:
-        --------
-        bool: True if the task exists, otherwise False.
-        """
-        if 1 <= task_number <= len(self.tasks):
-            return True
-
-        if self.tasks:
-            message = f"Choose a number from 1 to {len(self.tasks)}."
-        else:
-            message = "There are no tasks yet."
-
-        print(f"No task {task_number}. {message}")
-        return False
-
-    def _append_task(self, task: Task) -> None:
-        """
-        Appends a task to the collection, saves it, and prints confirmation.
-
-        Args:
-        -----
-        task (Task): The task to add to the collection.
-
-        Returns:
-        --------
-        None.
-        """
-        self.tasks.append(task)
-        self._save_tasks()
-        print(f"Added:\n{task}")
-
-    def _add_todo_task(self, user_response: str) -> None:
-        """
-        Creates and adds a todo task from command text.
-        Prints confirmation on success, or usage guidance for invalid input.
-
-        Args:
-        -----
-        user_response (str): A command in the format "todo <description>".
-
-        Returns:
-        --------
-        None.
-        """
-        user_response_match = self._match_user_response(
-            user_response,
-            r"^todo\s+(.+)$",
-            "Use: todo <description>",
-        )
-
-        if user_response_match is None:
-            return
-
-        description = user_response_match.group(1)
-
-        task = Task(description, "todo")
+    def add_todo(self, description: str) -> TodoTask:
+        """Adds and saves a to-do task."""
+        task = TodoTask(description)
         self._append_task(task)
+        return task
 
-    def _add_recurring_task(self, user_response: str) -> None:
-        """
-        Creates and adds a recurring task from command text.
-        Prints confirmation on success, or usage guidance for invalid input.
-
-        Args:
-        -----
-        user_response (str): A command in the format
-            "recurring <description> /every <day>".
-
-        Returns:
-        --------
-        None.
-        """
-        user_response_match = self._match_user_response(
-            user_response,
-            r"^recurring\s+(.+?)\s+/every\s+(\w+)$",
-            "Use: recurring <description> /every <day>",
-        )
-
-        if user_response_match is None:
-            return
-
-        description = user_response_match.group(1)
-        day = user_response_match.group(2)
-
-        task = Task(description, "recurring")
-        task.day = day
-
+    def add_deadline(
+        self, description: str, due_date: date, due_time: time | None
+    ) -> DeadlineTask:
+        """Adds and saves a deadline task."""
+        task = DeadlineTask(description, due_date, due_time)
         self._append_task(task)
+        return task
 
-    @staticmethod
-    def _parse_deadline(value: str) -> tuple[date, time | None] | None:
-        """
-        Converts deadline text into a date and optional time.
-        Prints guidance if the format or value is invalid.
-
-        Args:
-        -----
-        value (str): A date as YYYY-MM-DD, optionally followed by HHMM.
-
-        Returns:
-        --------
-        tuple[date, time | None] | None: The parsed date and optional time,
-            or None if invalid.
-        """
-        deadline_match = re.fullmatch(
-            r"([0-9]{4}-[0-9]{2}-[0-9]{2})(?:\s+([0-9]{4}))?",
-            value,
-        )
-
-        if deadline_match is not None:
-            try:
-                due_date = date.fromisoformat(deadline_match.group(1))
-                time_text = deadline_match.group(2)
-                due_time = (
-                    time(hour=int(time_text[:2]), minute=int(time_text[2:]))
-                    if time_text is not None
-                    else None
-                )
-                return due_date, due_time
-            except ValueError:
-                pass
-
-        print(
-            "Invalid deadline. Use a valid date as YYYY-MM-DD, "
-            "optionally followed by a time as HHMM (0000–2359)."
-        )
-        return None
-
-    def _add_deadline_task(self, user_response: str) -> None:
-        """
-        Creates and adds a deadline task from command text.
-        Prints confirmation on success, or guidance for invalid input.
-
-        Args:
-        -----
-        user_response (str): A command in the format
-            "deadline <description> /by YYYY-MM-DD [HHMM]".
-
-        Returns:
-        --------
-        None.
-        """
-        user_response_match = self._match_user_response(
-            user_response,
-            r"^deadline\s+(.+?)\s+/by\s+(.+)$",
-            "Use: deadline <description> /by YYYY-MM-DD [HHMM]",
-        )
-
-        if user_response_match is None:
-            return
-
-        description = user_response_match.group(1)
-        parsed_deadline = self._parse_deadline(user_response_match.group(2))
-
-        if parsed_deadline is None:
-            return
-
-        due_date, due_time = parsed_deadline
-
-        task = Task(description, "deadline")
-        task.due_date = due_date
-        task.due_time = due_time
-
+    def add_event(self, description: str, start: str, end: str) -> EventTask:
+        """Adds and saves an event task."""
+        task = EventTask(description, start, end)
         self._append_task(task)
+        return task
 
-    def _add_event_task(self, user_response: str) -> None:
-        """
-        Creates and adds an event task from command text.
-        Prints confirmation on success, or usage guidance for invalid input.
-
-        Args:
-        -----
-        user_response (str): A command in the format
-            "event <description> /from <start> /to <end>".
-
-        Returns:
-        --------
-        None.
-        """
-        user_response_match = self._match_user_response(
-            user_response,
-            r"^event\s+(.+?)\s+/from\s+(.+?)\s+/to\s+(.+)$",
-            "Use: event <description> /from <start> /to <end>",
-        )
-
-        if user_response_match is None:
-            return
-
-        description = user_response_match.group(1)
-        start = user_response_match.group(2)
-        end = user_response_match.group(3)
-
-        task = Task(description, "event")
-        task.start = start
-        task.end = end
-
+    def add_recurring(self, description: str, day: str) -> RecurringTask:
+        """Adds and saves a recurring task."""
+        task = RecurringTask(description, day)
         self._append_task(task)
+        return task
 
-    def add_task(self, user_response: str) -> None:
-        """
-        Routes a task-creation command to the appropriate task handler.
-        Prints usage guidance if the task type is unrecognized.
+    def all_tasks(self) -> list[Task]:
+        """Returns the tasks in their current order."""
+        return self.tasks
 
-        Args:
-        -----
-        user_response (str): The full todo, deadline, event, or recurring command.
+    def incomplete_count(self) -> int:
+        """Returns the number of incomplete tasks."""
+        return sum(1 for task in self.tasks if not task.done)
 
-        Returns:
-        --------
-        None.
-        """
-        task_type = user_response.split(" ", 1)[0]
-
-        if task_type == "todo":
-            self._add_todo_task(user_response)
-
-        elif task_type == "event":
-            self._add_event_task(user_response)
-
-        elif task_type == "deadline":
-            self._add_deadline_task(user_response)
-
-        elif task_type == "recurring":
-            self._add_recurring_task(user_response)
-
-        else:
-            print(
-                "Use:\n"
-                "  todo <description>\n"
-                "  deadline <description> /by YYYY-MM-DD [HHMM]\n"
-                "  event <description> /from <start> /to <end>\n"
-                "  recurring <description> /every <day>"
-            )
-
-    def list_tasks(self) -> None:
-        """
-        Prints all tasks with numbering starting at 1,
-        followed by the number of incomplete tasks.
-
-        Returns:
-        --------
-        None.
-        """
-        for i, task in enumerate(self.tasks, start=1):
-            print(f"{i}. {task}")
-
-        undone_task_count = sum(1 for task in self.tasks if not task.done)
-        print(f"That's {undone_task_count} on your plate.")
-
-    def list_due_tasks(self, user_response: str) -> None:
-        """
-        Prints deadlines due on the requested date, numbered from 1.
-        Includes completed tasks and ignores deadline times.
-        Prints guidance for invalid input or a message if nothing matches.
-
-        Args:
-        -----
-        user_response (str): A command in the format "due YYYY-MM-DD".
-
-        Returns:
-        --------
-        None.
-        """
-        user_response_match = self._match_user_response(
-            user_response,
-            r"^due\s+([0-9]{4}-[0-9]{2}-[0-9]{2})$",
-            "Use: due YYYY-MM-DD",
-        )
-
-        if user_response_match is None:
-            return
-
-        try:
-            query_date = date.fromisoformat(user_response_match.group(1))
-        except ValueError:
-            print("Invalid date. Use a valid calendar date as YYYY-MM-DD.")
-            return
-
-        matching_tasks = [
-            task
-            for task in self.tasks
-            if task.task_type == "deadline" and task.due_date == query_date
+    def due_tasks(self, query_date: date) -> list[Task]:
+        """Returns deadline tasks due on the requested date."""
+        return [
+            task for task in self.tasks if getattr(task, "due_date", None) == query_date
         ]
 
-        if not matching_tasks:
-            print(f"No deadlines due on {query_date}.")
-            return
-
-        for i, task in enumerate(matching_tasks, start=1):
-            print(f"{i}. {task}")
-
-    def find_tasks(self, user_response: str) -> None:
-        """
-        Prints tasks matching a case-insensitive substring of their description.
-        Numbers results from 1, includes completed tasks, and preserves original spelling.
-        Prints guidance for an empty query or a message if nothing matches.
-
-        Args:
-        -----
-        user_response (str): A command in the format "find <text>".
-
-        Returns:
-        --------
-        None.
-        """
-        user_response_match = self._match_user_response(
-            user_response,
-            r"^find\s+(\S(?:.*\S)?)\s*$",
-            "Use: find <text>",
-        )
-
-        if user_response_match is None:
-            return
-
-        query = user_response_match.group(1)
+    def find_tasks(self, query: str) -> list[Task]:
+        """Returns tasks with the query in their descriptions."""
         search_text = query.casefold()
-        matching_tasks = [
+        return [
             task for task in self.tasks if search_text in task.description.casefold()
         ]
 
-        if not matching_tasks:
-            print(f'No tasks found matching "{query}".')
-            return
+    def task_at(self, task_number: int) -> Task | None:
+        """Returns a task by its one-based display number, if it exists."""
+        if 1 <= task_number <= len(self.tasks):
+            return self.tasks[task_number - 1]
+        return None
 
-        for i, task in enumerate(matching_tasks, start=1):
-            print(f"{i}. {task}")
-
-    def mark_task(self, user_response: str) -> None:
-        """
-        Marks the specified task as complete, saves it, and prints confirmation.
-        Prints guidance if the command or task number is invalid.
-
-        Args:
-        -----
-        user_response (str): A command in the format "mark <number>",
-            where number is the task's position in the list, starting at 1.
-
-        Returns:
-        --------
-        None.
-        """
-        user_response_match = self._match_user_response(
-            user_response,
-            r"^mark\s+(\d+)$",
-            "Use: mark <number>",
-        )
-
-        if user_response_match is None:
-            return
-
-        task_number = int(user_response_match.group(1))
-
-        if not self._check_task_number(task_number):
-            return
-
-        task = self.tasks[task_number - 1]
+    def mark(self, task_number: int) -> Task | None:
+        """Marks a task done and saves the changed list."""
+        task = self.task_at(task_number)
+        if task is None:
+            return None
         task.mark_done()
         self._save_tasks()
-        print(f"Done:\n{task}")
+        return task
 
-    def unmark_task(self, user_response: str) -> None:
-        """
-        Marks the specified task as incomplete, saves it, and prints confirmation.
-        Prints guidance if the command or task number is invalid.
-
-        Args:
-        -----
-        user_response (str): A command in the format "unmark <number>",
-            where number is the task's position in the list, starting at 1.
-
-        Returns:
-        --------
-        None.
-        """
-        user_response_match = self._match_user_response(
-            user_response,
-            r"^unmark\s+(\d+)$",
-            "Use: unmark <number>",
-        )
-
-        if user_response_match is None:
-            return
-
-        task_number = int(user_response_match.group(1))
-
-        if not self._check_task_number(task_number):
-            return
-
-        task = self.tasks[task_number - 1]
+    def unmark(self, task_number: int) -> Task | None:
+        """Marks a task incomplete and saves the changed list."""
+        task = self.task_at(task_number)
+        if task is None:
+            return None
         task.unmark_done()
         self._save_tasks()
-        print(f"Not done:\n{task}")
+        return task
 
-    def note_task(self, user_response: str) -> None:
-        """
-        Stores a note on the specified task, replacing any existing note.
-        Saves the updated task list.
-        Prints confirmation, or guidance if the command or task number is invalid.
-
-        Args:
-        -----
-        user_response (str): A command in the format "note <number> <note>",
-            where number is the task's position in the list, starting at 1.
-
-        Returns:
-        --------
-        None.
-        """
-        user_response_match = self._match_user_response(
-            user_response,
-            r"^note\s+(\d+)\s+(.+)$",
-            "Use: note <number> <note>",
-        )
-
-        if user_response_match is None:
-            return
-
-        task_number = int(user_response_match.group(1))
-        note = user_response_match.group(2)
-
-        if not self._check_task_number(task_number):
-            return
-
-        task = self.tasks[task_number - 1]
+    def add_note(self, task_number: int, note: str) -> Task | None:
+        """Replaces a task note and saves the changed list."""
+        task = self.task_at(task_number)
+        if task is None:
+            return None
         task.add_note(note)
         self._save_tasks()
-        print(f"Noted:\n{task}")
+        return task
 
-    def delete_task(self, user_response: str) -> None:
-        """
-        Removes the specified task and prints it with the remaining task count.
-        Saves the updated task list before printing confirmation.
-        Prints guidance if the command or task number is invalid.
-
-        Args:
-        -----
-        user_response (str): A command in the format "delete <number>",
-            where number is the task's position in the list, starting at 1.
-
-        Returns:
-        --------
-        None.
-        """
-        user_response_match = self._match_user_response(
-            user_response,
-            r"^delete\s+(\d+)$",
-            "Use: delete <number>",
-        )
-
-        if user_response_match is None:
-            return
-
-        task_number = int(user_response_match.group(1))
-
-        if not self._check_task_number(task_number):
-            return
-
-        task = self.tasks.pop(task_number - 1)
+    def delete(self, task_number: int) -> tuple[Task, int] | None:
+        """Removes a task and saves the changed list."""
+        task = self.task_at(task_number)
+        if task is None:
+            return None
+        self.tasks.pop(task_number - 1)
         self._save_tasks()
-        print(f"Deleted:\n{task}")
-        remaining = len(self.tasks)
-        print(f"{remaining} tasks left.")
+        return task, len(self.tasks)
+
+    def _append_task(self, task: Task) -> None:
+        """Appends a task and saves the changed list."""
+        self.tasks.append(task)
+        self._save_tasks()
+
+    def _save_tasks(self) -> None:
+        """Saves the current task list through the storage layer."""
+        save_tasks(self.tasks)

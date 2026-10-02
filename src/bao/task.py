@@ -1,31 +1,41 @@
-"""Individual task state and display formatting."""
+"""Task models, task-specific state, and display formatting."""
 
 from datetime import date, time
+from typing import Any
 
 
 class Task:
-    def __init__(self, description: str, task_type: str) -> None:
+    """Shared state and behavior for every task type."""
+
+    task_type = ""
+
+    def __init__(
+        self,
+        description: str,
+        task_type: str | None = None,
+        *,
+        done: bool = False,
+        note: str | None = None,
+    ) -> None:
         """
-        Initializes an incomplete task with no note or timing assigned.
+        Initializes a task with its shared fields.
 
         Args:
         -----
         description (str): What needs to be done.
-        task_type (str): The task category: todo, deadline, event, or recurring.
+        task_type (str | None): An optional type marker for a generic task.
+        done (bool): Whether the task is complete.
+        note (str | None): An optional note attached to the task.
 
         Returns:
         --------
         None.
         """
         self.description = description
-        self.done = False
-        self.note: str | None = None
-        self.task_type = task_type
-        self.day: str | None = None
-        self.start: str | None = None
-        self.end: str | None = None
-        self.due_date: date | None = None
-        self.due_time: time | None = None
+        self.done = done
+        self.note = note
+        if task_type is not None:
+            self.task_type = task_type
 
     def mark_done(self) -> None:
         """
@@ -60,6 +70,21 @@ class Task:
         None.
         """
         self.note = note
+
+    def to_dict(self) -> dict[str, Any]:
+        """
+        Converts this task's shared fields to a JSON-ready dictionary.
+
+        Returns:
+        --------
+        dict[str, Any]: The shared task fields and its type marker.
+        """
+        return {
+            "description": self.description,
+            "done": self.done,
+            "note": self.note,
+            "type": self.task_type,
+        }
 
     def __str__(self) -> str:
         """
@@ -123,20 +148,114 @@ class Task:
         str: The timing text with a leading space, or an empty string if absent.
         """
 
-        time_info = ""
-        if self.task_type == "recurring" and self.day:
-            time_info = f" (every: {self.day})"
-        elif self.task_type == "deadline" and self.due_date is not None:
-            deadline_text = self.due_date.strftime("%b %d %Y")
+        day = getattr(self, "day", None)
+        if day:
+            return f" (every: {day})"
 
-            if self.due_time is not None:
-                hour = self.due_time.hour % 12 or 12
-                minute = f":{self.due_time.minute:02d}" if self.due_time.minute else ""
-                period = "am" if self.due_time.hour < 12 else "pm"
+        due_date = getattr(self, "due_date", None)
+        if due_date is not None:
+            deadline_text = due_date.strftime("%b %d %Y")
+            due_time = getattr(self, "due_time", None)
+
+            if due_time is not None:
+                hour = due_time.hour % 12 or 12
+                minute = f":{due_time.minute:02d}" if due_time.minute else ""
+                period = "am" if due_time.hour < 12 else "pm"
                 deadline_text += f", {hour}{minute}{period}"
 
-            time_info = f" (by: {deadline_text})"
-        elif self.task_type == "event" and self.start and self.end:
-            time_info = f" (from: {self.start} to: {self.end})"
+            return f" (by: {deadline_text})"
 
-        return time_info
+        start = getattr(self, "start", None)
+        end = getattr(self, "end", None)
+        if start and end:
+            return f" (from: {start} to: {end})"
+
+        return ""
+
+
+class TodoTask(Task):
+    """A task without type-specific timing fields."""
+
+    task_type = "todo"
+
+
+class DeadlineTask(Task):
+    """A task with an optional due date and due time."""
+
+    task_type = "deadline"
+
+    def __init__(
+        self,
+        description: str,
+        due_date: date | None = None,
+        due_time: time | None = None,
+        *,
+        done: bool = False,
+        note: str | None = None,
+    ) -> None:
+        """Initializes a deadline task with its applicable fields."""
+        super().__init__(description, done=done, note=note)
+        self.due_date = due_date
+        self.due_time = due_time
+
+    def to_dict(self) -> dict[str, Any]:
+        """Returns shared and deadline fields with ISO date values."""
+        task = super().to_dict()
+        task["due_date"] = (
+            self.due_date.isoformat() if self.due_date is not None else None
+        )
+        task["due_time"] = (
+            self.due_time.isoformat() if self.due_time is not None else None
+        )
+        return task
+
+
+class EventTask(Task):
+    """A task with optional event start and end text."""
+
+    task_type = "event"
+
+    def __init__(
+        self,
+        description: str,
+        start: str | None = None,
+        end: str | None = None,
+        *,
+        done: bool = False,
+        note: str | None = None,
+    ) -> None:
+        """Initializes an event task with its applicable fields."""
+        super().__init__(description, done=done, note=note)
+        self.start = start
+        self.end = end
+
+    def to_dict(self) -> dict[str, Any]:
+        """Returns shared and event fields."""
+        task = super().to_dict()
+        task["start"] = self.start
+        task["end"] = self.end
+        return task
+
+
+class RecurringTask(Task):
+    """A task with an optional recurrence day."""
+
+    task_type = "recurring"
+
+    def __init__(
+        self,
+        description: str,
+        day: str | None = None,
+        *,
+        done: bool = False,
+        note: str | None = None,
+    ) -> None:
+        """Initializes a recurring task with its applicable field."""
+        super().__init__(description, done=done, note=note)
+        self.day = day
+
+    def to_dict(self) -> dict[str, Any]:
+        """Returns shared and recurrence fields."""
+        task = super().to_dict()
+        task["day"] = self.day
+        return task
