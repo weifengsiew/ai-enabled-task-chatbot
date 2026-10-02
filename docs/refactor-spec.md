@@ -32,8 +32,7 @@ A mixed list of task objects can be filtered by whether an attribute exists, is 
 [t for t in tasks if not hasattr(t, "start_date")]
 
 # Attribute exists but is unspecified
-[t for t in tasks
- if hasattr(t, "start_date") and t.start_date is None]
+[t for t in tasks if hasattr(t, "start_date") and t.start_date is None]
 
 # Attribute has a value
 [t for t in tasks if getattr(t, "start_date", None) is not None]
