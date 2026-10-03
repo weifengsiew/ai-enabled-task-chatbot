@@ -14,4 +14,4 @@ See the project documentation for the detailed guidance:
 - [Testing with pytest](docs/guides/pytest-testing.md) for test structure, test levels, and pytest usage.
 - [Ruff linting and formatting](docs/guides/ruff-linter-formatter.md) for linting and formatting commands.
 - [Type checking with mypy](docs/guides/mypy-type-checker.md) for static type-checking guidance.
-- [GitHub Actions CI](docs/guides/github-actions-ci.md) for the project’s continuous-integration checks.
+- [GitHub/GitLab continuous integration](docs/guides/github-gitlab-continuous-integration.md) for the project’s continuous-integration checks.
