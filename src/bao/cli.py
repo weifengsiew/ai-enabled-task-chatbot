@@ -5,13 +5,13 @@ from .tasks import Tasks
 
 
 def greeting() -> None:
-    """Prints Bao's opening greeting."""
+    """Print Bao's opening greeting."""
     print("Hello! I'm bao. What needs doing?")
 
 
 def chat() -> None:
     """
-    Runs the interactive task-management conversation.
+    Run the interactive task-management conversation.
 
     Returns:
     --------
@@ -21,29 +21,29 @@ def chat() -> None:
 
     while True:
         user_response = input("> ")
-        parsed = Command.parse_user_response_with_command_pattern(user_response)
+        matched_command = Command.parse_user_response_with_command_pattern(user_response)
 
-        if parsed is None:
+        if matched_command is None:
             continue
 
-        if isinstance(parsed, str):
-            print(parsed)
+        if isinstance(matched_command, str):
+            print(matched_command)
             continue
 
-        if isinstance(parsed, CommandBye):
+        if isinstance(matched_command, CommandBye):
             return
 
-        print(parsed.execute_command(tasks))
+        print(matched_command.execute_command(tasks))
 
 
 def farewell() -> None:
-    """Prints Bao's closing message."""
+    """Print Bao's closing message."""
     print("Later.")
 
 
 def main() -> None:
     """
-    Runs Bao's command-line interface.
+    Run Bao's command-line interface.
 
     Returns:
     --------

@@ -102,6 +102,10 @@ A separate class for `_parse_find` would add structure without clarifying owners
 Use the project’s NumPy-style docstrings and explicit type hints. Describe
 arguments and return values when they are present:
 
+Keep function signatures and their type hints on one compact line where
+practical. Only expand a signature across multiple lines when the compact
+form would materially reduce readability.
+
 ```python
 def to_dict(self) -> dict[str, Any]:
     """
@@ -115,7 +119,7 @@ def to_dict(self) -> dict[str, Any]:
         "description": self.description,
         "done": self.done,
         "note": self.note,
-        "type": self.task_type,
+        "task_type": self.task_type,
     }
 ```
 

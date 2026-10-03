@@ -1,7 +1,7 @@
 """Loading and saving task data."""
 
 import json
-from datetime import date, time
+from datetime import datetime
 from pathlib import Path
 from typing import Any, cast
 
@@ -12,7 +12,7 @@ DATA_FILE = Path("data/tasks.json")
 
 def save_tasks(tasks: list[Task], path: Path = DATA_FILE) -> None:
     """
-    Saves tasks as JSON, creating the destination directory if needed.
+    Save tasks as JSON, creating the destination directory if needed.
 
     Args:
     -----
@@ -30,7 +30,7 @@ def save_tasks(tasks: list[Task], path: Path = DATA_FILE) -> None:
 
 def load_tasks(path: Path = DATA_FILE) -> list[Task]:
     """
-    Loads tasks from JSON and reconstructs their concrete task classes.
+    Load tasks from JSON and reconstruct their concrete task classes.
 
     Args:
     -----
@@ -50,7 +50,7 @@ def load_tasks(path: Path = DATA_FILE) -> list[Task]:
 
 def _task_from_record(record: dict[str, Any]) -> Task:
     """
-    Reconstructs one concrete task from its serialized record.
+    Reconstruct one concrete task from its serialized record.
 
     Args:
     -----
@@ -60,7 +60,7 @@ def _task_from_record(record: dict[str, Any]) -> Task:
     --------
     Task: The matching concrete task instance.
     """
-    task_type = record["type"]
+    task_type = record["task_type"]
     common = {
         "done": record["done"],
         "note": record["note"],
@@ -70,24 +70,32 @@ def _task_from_record(record: dict[str, Any]) -> Task:
         return TodoTask(record["description"], **common)
 
     if task_type == "deadline":
-        due_date = record.get("due_date")
-        due_time = record.get("due_time")
+        due_datetime = record.get("due_datetime")
         return DeadlineTask(
             record["description"],
-            date.fromisoformat(due_date) if due_date is not None else None,
-            time.fromisoformat(due_time) if due_time is not None else None,
+            datetime.fromisoformat(due_datetime) if due_datetime is not None else None,
             **common,
         )
 
     if task_type == "event":
         return EventTask(
             record["description"],
-            record.get("start"),
-            record.get("end"),
+            (
+                datetime.fromisoformat(record["start_datetime"])
+                if record.get("start_datetime") is not None
+                else None
+            ),
+            (
+                datetime.fromisoformat(record["end_datetime"])
+                if record.get("end_datetime") is not None
+                else None
+            ),
             **common,
         )
 
     if task_type == "recurring":
-        return RecurringTask(record["description"], record.get("day"), **common)
+        return RecurringTask(
+            record["description"], record.get("recurrence_rule"), **common
+        )
 
     raise ValueError(f"Unknown task type: {task_type}")

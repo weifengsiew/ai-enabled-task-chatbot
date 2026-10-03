@@ -15,11 +15,8 @@ def isolated_data_directory(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> 
     monkeypatch.chdir(tmp_path)
 
 
-def run_session(
-    monkeypatch: pytest.MonkeyPatch,
-    capsys: pytest.CaptureFixture[str],
-    *commands: str,
-) -> str:
+def run_session(monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str],
+                *commands: str) -> str:
     """Supply console commands, run the chat loop, and return captured output."""
     entries = iter(commands)
     monkeypatch.setattr(builtins, "input", lambda _prompt="": next(entries))
@@ -27,11 +24,8 @@ def run_session(
     return capsys.readouterr().out
 
 
-def assert_session(
-    monkeypatch: pytest.MonkeyPatch,
-    capsys: pytest.CaptureFixture[str],
-    steps: list[tuple[str, str]],
-) -> None:
+def assert_session(monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str],
+                   steps: list[tuple[str, str]]) -> None:
     """Run command/output pairs and check the complete output; may save tasks."""
     output = run_session(
         monkeypatch,
@@ -42,9 +36,8 @@ def assert_session(
     assert output == "".join(expected for _, expected in steps)
 
 
-def test_adding_and_listing(
-    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
-) -> None:
+def test_adding_and_listing(monkeypatch: pytest.MonkeyPatch,
+                            capsys: pytest.CaptureFixture[str]) -> None:
     """Verify adding and listing each task kind."""
     steps = [
         # adding todo
@@ -61,8 +54,8 @@ def test_adding_and_listing(
         ),
         # adding event
         (
-            "event meeting /from 2026-03-01 /to 2026-03-02",
-            "Added:\n[E][ ]meeting (from: 2026-03-01 to: 2026-03-02)\n",
+            "event meeting /from 2026-03-01 0900 /to 2026-03-01 1000",
+            "Added:\n[E][ ]meeting (from: 2026-03-01 09:00 to: 2026-03-01 10:00)\n",
         ),
         # adding recurring
         (
@@ -76,7 +69,7 @@ def test_adding_and_listing(
                 "1. [T][ ]read paper\n"
                 "2. [D][ ]renew licence (by: Mar 01 2026)\n"
                 "3. [D][ ]submit Paper (by: Mar 01 2026, 6pm)\n"
-                "4. [E][ ]meeting (from: 2026-03-01 to: 2026-03-02)\n"
+                "4. [E][ ]meeting (from: 2026-03-01 09:00 to: 2026-03-01 10:00)\n"
                 "5. [R][ ]water plants (every: sunday)\n"
                 "That's 5 on your plate.\n"
             ),
@@ -86,10 +79,8 @@ def test_adding_and_listing(
     assert_session(monkeypatch, capsys, steps)
 
 
-def test_marking_unmarking_noting_and_deleting(
-    monkeypatch: pytest.MonkeyPatch,
-    capsys: pytest.CaptureFixture[str],
-) -> None:
+def test_marking_unmarking_noting_and_deleting(monkeypatch: pytest.MonkeyPatch,
+                                              capsys: pytest.CaptureFixture[str]) -> None:
     """Verify marking, unmarking, noting, and deleting."""
     updated_list = (
         "1. [T][ ]read paper\n"
@@ -139,9 +130,40 @@ def test_marking_unmarking_noting_and_deleting(
     assert_session(monkeypatch, capsys, steps)
 
 
-def test_invalid_inputs(
-    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
-) -> None:
+def test_due_queries_by_date_and_time(monkeypatch: pytest.MonkeyPatch,
+                                     capsys: pytest.CaptureFixture[str]) -> None:
+    """Verify due queries can filter deadlines by date and optional time."""
+    run_session(
+        monkeypatch,
+        capsys,
+        "deadline renew licence /by 2026-03-01",
+        "deadline submit Paper /by 2026-03-01 1800",
+        "bye",
+    )
+
+    steps = [
+        (
+            "due 2026-03-01",
+            (
+                "1. [D][ ]renew licence (by: Mar 01 2026)\n"
+                "2. [D][ ]submit Paper (by: Mar 01 2026, 6pm)\n"
+            ),
+        ),
+        (
+            "due 2026-03-01 1800",
+            "1. [D][ ]submit Paper (by: Mar 01 2026, 6pm)\n",
+        ),
+        (
+            "due 2026-03-01 1900",
+            "No deadlines due on 2026-03-01 1900.\n",
+        ),
+    ]
+
+    assert_session(monkeypatch, capsys, steps)
+
+
+def test_invalid_inputs(monkeypatch: pytest.MonkeyPatch,
+                        capsys: pytest.CaptureFixture[str]) -> None:
     """Verify missing, malformed, and out-of-range input.
 
     Includes invalid dates and out-of-range times.
@@ -165,14 +187,18 @@ def test_invalid_inputs(
         # missing input
         (
             "event meeting /from monday",
-            "Use: event <description> /from <start> /to <end>\n",
+            "Use: event <description> /from YYYY-MM-DD HHMM /to YYYY-MM-DD HHMM\n",
+        ),
+        (
+            "event meeting /from 2026-02-30 0900 /to 2026-03-01 1000",
+            "Invalid event date or time. Use YYYY-MM-DD HHMM.\n",
         ),
         # missing input
-        ("recurring water plants", "Use: recurring <description> /every <day>\n"),
+        ("recurring water plants", "Use: recurring <description> /every <rule>\n"),
         # missing input
         ("note 1", "Use: note <number> <note>\n"),
         # missing input
-        ("due", "Use: due YYYY-MM-DD\n"),
+        ("due", "Use: due YYYY-MM-DD [HHMM]\n"),
         # missing input
         ("find", "Use: find <text>\n"),
         # missing input
@@ -188,13 +214,25 @@ def test_invalid_inputs(
         # malformed input
         ("delete abc", "Use: delete <number>\n"),
         # malformed input
-        ("due 2026-3-01", "Use: due YYYY-MM-DD\n"),
-        # malformed input
-        ("due 2026-03-01 1800", "Use: due YYYY-MM-DD\n"),
+        ("due 2026-3-01", "Use: due YYYY-MM-DD [HHMM]\n"),
         # invalid dates
         ("deadline submit report /by 2026-02-30", invalid_deadline),
         # invalid dates
-        ("due 2026-02-30", "Invalid date. Use a valid calendar date as YYYY-MM-DD.\n"),
+        (
+            "due 2026-02-30",
+            (
+                "Invalid date or time. Use a valid date as YYYY-MM-DD, "
+                "optionally followed by a time as HHMM (0000–2359).\n"
+            ),
+        ),
+        # out-of-range times
+        (
+            "due 2026-03-01 2400",
+            (
+                "Invalid date or time. Use a valid date as YYYY-MM-DD, "
+                "optionally followed by a time as HHMM (0000–2359).\n"
+            ),
+        ),
         # out-of-range times
         ("deadline submit report /by 2026-03-01 2400", invalid_deadline),
         # unchanged after invalid input
@@ -208,9 +246,8 @@ def test_invalid_inputs(
     assert path.read_text(encoding="utf-8") == original
 
 
-def test_saving_and_loading(
-    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
-) -> None:
+def test_saving_and_loading(monkeypatch: pytest.MonkeyPatch,
+                            capsys: pytest.CaptureFixture[str]) -> None:
     """Verify saving and loading, including a missing data folder."""
     # missing data folder
     run_session(monkeypatch, capsys, "bye")
@@ -224,7 +261,7 @@ def test_saving_and_loading(
         "todo read book",
         "deadline submit report /by 2026-03-02",
         "deadline send slides /by 2026-03-01 2100",
-        "event meeting /from monday /to tuesday",
+        "event meeting /from 2026-03-01 0900 /to 2026-03-01 1000",
         "recurring water plants /every sunday",
         "todo remove this",
         "mark 1",
@@ -245,7 +282,7 @@ def test_saving_and_loading(
                 "2. [D][ ]submit report (by: Mar 02 2026)\n"
                 "Note: attach receipts\n"
                 "3. [D][X]send slides (by: Mar 01 2026, 9pm)\n"
-                "4. [E][ ]meeting (from: monday to: tuesday)\n"
+                "4. [E][ ]meeting (from: 2026-03-01 09:00 to: 2026-03-01 10:00)\n"
                 "5. [R][ ]water plants (every: sunday)\n"
                 "That's 4 on your plate.\n"
             ),
@@ -260,9 +297,8 @@ def test_saving_and_loading(
     assert path.read_text(encoding="utf-8") == saved
 
 
-def test_deadline_parsing_and_due(
-    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
-) -> None:
+def test_deadline_parsing_and_due(monkeypatch: pytest.MonkeyPatch,
+                                 capsys: pytest.CaptureFixture[str]) -> None:
     """Verify deadline parsing and `due`."""
     updated_list = (
         "1. [T][ ]read paper\n"
@@ -302,9 +338,8 @@ def test_deadline_parsing_and_due(
     assert_session(monkeypatch, capsys, steps)
 
 
-def test_find(
-    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
-) -> None:
+def test_find(monkeypatch: pytest.MonkeyPatch,
+              capsys: pytest.CaptureFixture[str]) -> None:
     """Verify case-insensitive partial matching with `find`."""
     matches = "1. [T][ ]read paper\n2. [D][X]submit Paper (by: Mar 01 2026, 6pm)\n"
     updated_list = (
