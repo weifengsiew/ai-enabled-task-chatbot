@@ -46,7 +46,6 @@ Typical checks include:
 - dependency consistency
 - runtime/version checks
 - linting
-- formatting
 - type checking
 - automated tests
 
@@ -134,9 +133,6 @@ jobs:
 
       - name: Ruff lint
         run: uv run ruff check .
-
-      - name: Ruff format check
-        run: uv run ruff format --check .
 
       - name: Type check
         run: uv run mypy .
