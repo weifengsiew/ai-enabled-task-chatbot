@@ -146,9 +146,7 @@ def test_clean_file_end_to_end(tmp_path):
     output_file = tmp_path / "clean.csv"
 
     input_file.write_text(
-        "name,age\n"
-        " alice smith , 25 \n"
-        "BOB,30\n",
+        "name,age\n alice smith , 25 \nBOB,30\n",
         encoding="utf-8",
     )
 

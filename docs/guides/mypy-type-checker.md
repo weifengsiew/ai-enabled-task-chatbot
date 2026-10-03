@@ -73,8 +73,9 @@ Fix the mismatch where possible:
 def greet(name: str) -> str:
     return f"Hello {name}"
 
-greet("Ada")   # OK
-greet(42)      # error
+
+greet("Ada")  # OK
+greet(42)  # error
 ```
 
 Narrow optional values before using them:
