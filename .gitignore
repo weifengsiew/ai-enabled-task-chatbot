@@ -9,3 +9,20 @@ dist/
 *.egg-info/
 data/
 bao.code-workspace
+
+# macOS
+.DS_Store
+
+# Test coverage
+.coverage
+coverage.xml
+htmlcov/
+
+# Local environment/configuration
+.env
+.env.*
+!.env.example
+
+# Editor metadata
+.vscode/
+.idea/
