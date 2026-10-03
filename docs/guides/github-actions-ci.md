@@ -95,7 +95,7 @@ my-project/
 └── tests/
 ```
 
-## GitHub Actions setup
+## GitLab CI/CD setup
 
 Create this file in your repository:
 

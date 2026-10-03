@@ -7,7 +7,17 @@ In `src/bao/tasks.py`, `_append_task` is an internal method, so it uses a single
 ```python
 class Tasks:
     def _append_task(self, task: Task) -> None:
-        """Appends a task and saves the changed list."""
+        """
+        Appends a task and persists the changed task list.
+
+        Args:
+        -----
+        task (Task): The task to append and save.
+
+        Returns:
+        --------
+        None.
+        """
         self.tasks.append(task)
         self._save_tasks()
 ```
@@ -42,11 +52,23 @@ class Task:
 
     # Behavior: this method changes the task's completion state.
     def mark_done(self) -> None:
-        """Marks this task as completed."""
+        """
+        Marks this task as complete by setting its done status to True.
+
+        Returns:
+        --------
+        None.
+        """
         self.done = True
 
     def unmark_done(self) -> None:
-        """Marks this task as incomplete."""
+        """
+        Marks this task as incomplete by setting its done status to False.
+
+        Returns:
+        --------
+        None.
+        """
         self.done = False
 ```
 
@@ -56,7 +78,17 @@ Use a function when the operation is a focused transformation or validation and 
 
 ```python
 def _parse_find(match: re.Match[str]) -> Command | ParseError:
-    """Builds a parsed find command or its usage error."""
+    """
+    Builds a parsed find command or its usage error.
+
+    Args:
+    -----
+    match (re.Match[str]): The regular-expression match containing the query.
+
+    Returns:
+    --------
+    Command | ParseError: The parsed command or its usage error.
+    """
     query = match.group(1)
     if re.fullmatch(r"\S(?:.*\S)?\s*", query) is None:
         return ParseError("Use: find <text>")
@@ -67,16 +99,44 @@ A separate class for `_parse_find` would add structure without clarifying owners
 
 ## Good Docstring and Type Hint Examples
 
-Use the docstring and type-hint style already present in `src/bao/task.py`:
+Use the project’s NumPy-style docstrings and explicit type hints. Describe
+arguments and return values when they are present:
 
 ```python
-def mark_done(self) -> None:
+def to_dict(self) -> dict[str, Any]:
     """
-    Marks this task as complete by setting its done status to True.
+    Converts this task's shared fields to a JSON-ready dictionary.
 
     Returns:
     --------
-    None.
+    dict[str, Any]: The shared task fields and its type marker.
     """
-    self.done = True
+    return {
+        "description": self.description,
+        "done": self.done,
+        "note": self.note,
+        "type": self.task_type,
+    }
+```
+
+For functions that accept arguments and return values, document both using
+the same style:
+
+```python
+def _parse_find(match: re.Match[str]) -> Command | ParseError:
+    """
+    Builds a parsed find command or its usage error.
+
+    Args:
+    -----
+    match (re.Match[str]): The regular-expression match containing the query.
+
+    Returns:
+    --------
+    Command | ParseError: The parsed command or its usage error.
+    """
+    query = match.group(1)
+    if re.fullmatch(r"\S(?:.*\S)?\s*", query) is None:
+        return ParseError("Use: find <text>")
+    return Command("find", query=query.strip())
 ```
