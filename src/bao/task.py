@@ -7,6 +7,7 @@ from typing import Any
 class Task:
     """Shared state and behavior for every task type."""
 
+    # Identity: each Task instance represents one distinct task object.
     task_type = ""
 
     def __init__(
@@ -31,12 +32,14 @@ class Task:
         --------
         None.
         """
+        # State: these attributes describe the task's current condition.
         self.description = description
         self.done = done
         self.note = note
         if task_type is not None:
             self.task_type = task_type
 
+    # Behavior: this method changes the task's completion state.
     def mark_done(self) -> None:
         """
         Marks this task as complete by setting its done status to True.
