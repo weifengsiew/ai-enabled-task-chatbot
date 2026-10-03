@@ -1,6 +1,6 @@
 """Command-line entry point for Bao."""
 
-from .commands import Command, CommandBye
+from .read_task_commands import Command, CommandBye
 from .tasks import Tasks
 
 
@@ -21,7 +21,9 @@ def chat() -> None:
 
     while True:
         user_response = input("> ")
-        matched_command = Command.parse_user_response_with_command_pattern(user_response)
+        matched_command = Command.parse_user_response_with_command_pattern(
+            user_response
+        )
 
         if matched_command is None:
             continue

@@ -7,7 +7,7 @@ from datetime import date, time
 from typing import TYPE_CHECKING, overload
 
 if TYPE_CHECKING:
-    from .commands import CommandDelete, CommandMark, CommandUnmark
+    from .modify_task_commands import CommandDelete, CommandMark, CommandUnmark
 
 
 @overload
