@@ -1,23 +1,44 @@
-"""Command-line entry point for bao."""
+"""Command-line entry point for Bao."""
 
-from .ui import chat as _chat
-from .ui import farewell as _farewell
-from .ui import greeting as _greeting
+from .commands import Command, CommandBye
+from .tasks import Tasks
 
 
 def greeting() -> None:
     """Prints Bao's opening greeting."""
-    _greeting()
+    print("Hello! I'm bao. What needs doing?")
 
 
 def chat() -> None:
-    """Runs Bao's interactive conversation."""
-    _chat()
+    """
+    Runs the interactive task-management conversation.
+
+    Returns:
+    --------
+    None.
+    """
+    tasks = Tasks()
+
+    while True:
+        user_response = input("> ")
+        parsed = Command.parse_user_response_with_command_pattern(user_response)
+
+        if parsed is None:
+            continue
+
+        if isinstance(parsed, str):
+            print(parsed)
+            continue
+
+        if isinstance(parsed, CommandBye):
+            return
+
+        print(parsed.execute_command(tasks))
 
 
 def farewell() -> None:
     """Prints Bao's closing message."""
-    _farewell()
+    print("Later.")
 
 
 def main() -> None:

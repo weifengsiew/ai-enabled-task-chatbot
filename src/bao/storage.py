@@ -60,7 +60,7 @@ def _task_from_record(record: dict[str, Any]) -> Task:
     --------
     Task: The matching concrete task instance.
     """
-    task_type = record.get("type", record.get("task_type"))
+    task_type = record["type"]
     common = {
         "done": record["done"],
         "note": record["note"],

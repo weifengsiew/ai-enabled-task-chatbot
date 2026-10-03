@@ -14,7 +14,6 @@ class Task:
         self,
         description: str,
         task_type: str | None = None,
-        *,
         done: bool = False,
         note: str | None = None,
     ) -> None:
@@ -38,41 +37,6 @@ class Task:
         self.note = note
         if task_type is not None:
             self.task_type = task_type
-
-    # Behavior: this method changes the task's completion state.
-    def mark_done(self) -> None:
-        """
-        Marks this task as complete by setting its done status to True.
-
-        Returns:
-        --------
-        None.
-        """
-        self.done = True
-
-    def unmark_done(self) -> None:
-        """
-        Marks this task as incomplete by setting its done status to False.
-
-        Returns:
-        --------
-        None.
-        """
-        self.done = False
-
-    def add_note(self, note: str) -> None:
-        """
-        Stores a note on this task, replacing any existing note.
-
-        Args:
-        -----
-        note (str): The note text to store.
-
-        Returns:
-        --------
-        None.
-        """
-        self.note = note
 
     def to_dict(self) -> dict[str, Any]:
         """
@@ -192,7 +156,6 @@ class DeadlineTask(Task):
         description: str,
         due_date: date | None = None,
         due_time: time | None = None,
-        *,
         done: bool = False,
         note: str | None = None,
     ) -> None:
@@ -223,7 +186,6 @@ class EventTask(Task):
         description: str,
         start: str | None = None,
         end: str | None = None,
-        *,
         done: bool = False,
         note: str | None = None,
     ) -> None:
@@ -249,7 +211,6 @@ class RecurringTask(Task):
         self,
         description: str,
         day: str | None = None,
-        *,
         done: bool = False,
         note: str | None = None,
     ) -> None:

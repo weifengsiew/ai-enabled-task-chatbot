@@ -1,6 +1,6 @@
 # Working Guidelines
 
-- **Discuss before changes:** suggest and discuss changes first. Edit files only after user approval, such as "change approved." Reading files and discussing proposals do not require approval.
+- **Discuss before code changes:** suggest and discuss code changes first. Documentation-only changes may be made directly when they are clearly within the user's request. Reading files and discussing proposals do not require approval.
 - **Simple changes:** implement the minimal change that meets the agreed requirements. Add complexity iteration by iteration as needs become clear.
 - **Incremental changes:** always follow [docs/guides/implement-test-iterate.md](docs/guides/implement-test-iterate.md) for making changes.
 - **Focused changes:** solve the agreed problem without unrelated refactoring or new dependencies.
