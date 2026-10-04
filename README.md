@@ -33,7 +33,7 @@ This project explores how LLM-powered conversational interfaces can make everyda
 - Automated quality checks: GitHub Actions runs tests, ruff linting and formatting, and mypy type hint checking.
 - Reproducible dependencies: `uv.lock` records dependency versions for consistent installs.
 
-## Setup and Run `bao`
+## Setup and run `bao`
 
 Requires Python 3.13 and uv. From the repository root:
 
@@ -41,7 +41,7 @@ uv sync
 uv run python --version
 uv run bao
 
-## Commands Supported by `bao`
+## Commands supported by `bao`
 
 | Command | Purpose |
 | --- | --- |
@@ -59,7 +59,7 @@ uv run bao
 | `delete <number>` | Delete a task. |
 | `bye` | Exit the interactive session. |
 
-## Example Conversation
+## Example conversation
 
 ```text
 $ uv run bao
@@ -89,7 +89,7 @@ Note: include the monthly figures
 Later.
 ```
 
-## Contributor Workflow
+## Contributor workflow
 
 1. Fork the repository on GitHub.
 2. Clone your fork and open it in VS Code.
