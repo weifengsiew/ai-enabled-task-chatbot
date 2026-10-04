@@ -45,6 +45,16 @@ This project explores how LLM-powered conversational interfaces can make everyda
 - Manage tasks conversationally through a Command Line Interface (CLI) or Streamlit App Interface.
 - Create, search, update, filter, and view tasks using easy-to-use buttons.
 
+## Best Practices Highlights
+
+- Object-oriented programming: Shared `Task` and `Command` base classes with subclasses for specific task and command types.
+- Modular architecture:
+  - Interface modules: `cli.py` and `streamlit_app.py` handle user interaction.
+  - Command modules: `read_task_commands.py`, `add_task_commands.py`, and `modify_task_commands.py` handle task queries, creation, and updates.
+  - Supporting modules: `parser.py` parses dates, times, and task numbers; `task.py` defines task types and their display and serialization; `tasks.py` manages the task list and JSON loading and saving.
+- Automated quality checks: GitHub Actions runs tests, ruff linting and formatting, and mypy type hint checking.
+- Reproducible dependencies: `uv.lock` records dependency versions for consistent installs.
+
 ## Python Frameworks
 
 <p align="center">
@@ -69,16 +79,6 @@ This project explores how LLM-powered conversational interfaces can make everyda
 | Linting and formatting | Ruff |
 | Type checking | mypy |
 | Continuous integration | GitHub Actions |
-
-## Best Practices Highlights
-
-- Object-oriented programming: Shared `Task` and `Command` base classes with subclasses for specific task and command types.
-- Modular architecture:
-  - Interface modules: `cli.py` and `streamlit_app.py` handle user interaction.
-  - Command modules: `read_task_commands.py`, `add_task_commands.py`, and `modify_task_commands.py` handle task queries, creation, and updates.
-  - Supporting modules: `parser.py` parses dates, times, and task numbers; `task.py` defines task types and their display and serialization; `tasks.py` manages the task list and JSON loading and saving.
-- Automated quality checks: GitHub Actions runs tests, ruff linting and formatting, and mypy type hint checking.
-- Reproducible dependencies: `uv.lock` records dependency versions for consistent installs.
 
 ## Commands supported by `bao`
 
