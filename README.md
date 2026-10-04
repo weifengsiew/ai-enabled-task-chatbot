@@ -6,7 +6,9 @@
 
 ## Video demo
 
-[Watch the AI Enabled Task Chatbot demo](./AI%20Enabled%20Task%20Chatbot.MOV)
+Click the image to watch the AI Enabled Task Chatbot video demo:
+
+[![AI Enabled Task Chatbot video demo](./assets/AI%20Enabled%20Task%20Chatbot.MOV.png)](./AI%20Enabled%20Task%20Chatbot.MOV)
 
 ## User guide
 
