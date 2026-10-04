@@ -14,25 +14,6 @@ Watch the AI-Enabled Task Chatbot demo on YouTube:
 
 - [Streamlit User Guide](STREAMLIT_USER_GUIDE.md)
 
-## Project Motivation
-
-This project explores how LLM-powered conversational interfaces can make everyday task management feel more natural, while Python keeps tasks structured and the codebase testable and easy to extend.
-
-## Chatbot Feature Highlights
-
-- Manage tasks conversationally through a Command Line Interface (CLI) or Streamlit App Interface.
-- Create, search, update, filter, and view tasks using easy-to-use buttons.
-
-## Best Practices Highlights
-
-- Object-oriented programming: Shared `Task` and `Command` base classes with subclasses for specific task and command types.
-- Modular architecture:
-  - Interface modules: `cli.py` and `streamlit_app.py` handle user interaction.
-  - Command modules: `read_task_commands.py`, `add_task_commands.py`, and `modify_task_commands.py` handle task queries, creation, and updates.
-  - Supporting modules: `parser.py` parses dates, times, and task numbers; `task.py` defines task types and their display and serialization; `tasks.py` manages the task list and JSON loading and saving.
-- Automated quality checks: GitHub Actions runs tests, ruff linting and formatting, and mypy type hint checking.
-- Reproducible dependencies: `uv.lock` records dependency versions for consistent installs.
-
 ## Setup and run `bao`
 
 Requires Python 3.13 and uv. From the repository root, install dependencies and start the CLI:
@@ -54,6 +35,25 @@ uv run streamlit run src/bao/streamlit_app.py \
 Then open [http://127.0.0.1:7860](http://127.0.0.1:7860) in your browser.
 
 To enable AI assistance, configure the OpenAI-compatible LLM endpoint, model, and API key, then enable **Ask Bao AI** in Streamlit. See the [LLM setup instructions](STREAMLIT_USER_GUIDE.md#configure-the-api-key-and-start-bao-with-llm-assistance).
+
+## Project Motivation
+
+This project explores how LLM-powered conversational interfaces can make everyday task management feel more natural, while Python keeps tasks structured and the codebase testable and easy to extend.
+
+## Chatbot Feature Highlights
+
+- Manage tasks conversationally through a Command Line Interface (CLI) or Streamlit App Interface.
+- Create, search, update, filter, and view tasks using easy-to-use buttons.
+
+## Best Practices Highlights
+
+- Object-oriented programming: Shared `Task` and `Command` base classes with subclasses for specific task and command types.
+- Modular architecture:
+  - Interface modules: `cli.py` and `streamlit_app.py` handle user interaction.
+  - Command modules: `read_task_commands.py`, `add_task_commands.py`, and `modify_task_commands.py` handle task queries, creation, and updates.
+  - Supporting modules: `parser.py` parses dates, times, and task numbers; `task.py` defines task types and their display and serialization; `tasks.py` manages the task list and JSON loading and saving.
+- Automated quality checks: GitHub Actions runs tests, ruff linting and formatting, and mypy type hint checking.
+- Reproducible dependencies: `uv.lock` records dependency versions for consistent installs.
 
 ## Commands supported by `bao`
 
