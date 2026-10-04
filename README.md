@@ -6,9 +6,9 @@
 
 ## Video demo
 
-Click the image to watch the AI Enabled Task Chatbot video demo:
+Click the image to watch the AI Enabled Task Chatbot video demo on YouTube (no download required):
 
-[![AI Enabled Task Chatbot video demo](./assets/AI%20Enabled%20Task%20Chatbot.MOV.png)](./AI%20Enabled%20Task%20Chatbot.MOV)
+[![AI Enabled Task Chatbot video demo](./assets/AI%20Enabled%20Task%20Chatbot.MOV.png)](https://youtu.be/Vv8rg3zCtYU)
 
 ## User guide
 
