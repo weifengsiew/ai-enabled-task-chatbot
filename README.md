@@ -7,6 +7,11 @@
 - `inherited/`: original application with non-modular code.
 - `src/bao/`: main application with modular code.
 
+## Documentation
+
+- [Streamlit User Guide](STREAMLIT_USER_GUIDE.md)
+- [Developer documentation](docs/)
+
 ## Setup
 
 The project uses Python 3.13 and `uv`:
@@ -97,10 +102,10 @@ The manual pipeline runs the project's configured format, lint, type-checking, a
 
 | Command | Purpose |
 | --- | --- |
-| `todo <description>` | Add a todo task. |
+| `todo <description> [/on YYYY-MM-DD]` | Add a dated todo task. |
 | `deadline <description> /by YYYY-MM-DD [HHMM]` | Add a task with a deadline. |
 | `event <description> /from YYYY-MM-DD HHMM /to YYYY-MM-DD HHMM` | Add an event. |
-| `recurring <description> /every <rule>` | Add a recurring task. |
+| `recurring <description> /every <rule>` | Add a recurring task, such as `Wednesday at 21:00`. |
 | `list` | List all saved tasks. |
 | `due YYYY-MM-DD [HHMM]` | Find deadlines due on a date or at a time. |
 | `find <text>` | Search task descriptions. |

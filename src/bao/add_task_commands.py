@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import re
-from datetime import UTC, datetime, time
+from datetime import UTC, date, datetime, time
 
 from .parser import _parse_datetime_parts
 from .read_task_commands import Command
@@ -12,17 +12,19 @@ from .tasks import Tasks
 
 
 class CommandToDo(Command):
-    """Add a todo task."""
+    """Add a todo task with an optional date."""
 
-    def __init__(self, task_description: str) -> None:
+    def __init__(self, task_description: str, due_date: date | None = None) -> None:
         self.command_keyword = "todo"
-        self.command_usage = "todo <description>"
-        self.command_pattern = re.compile(r"^todo\s+(.+)$")
+        self.command_usage = "todo <description> [/on YYYY-MM-DD]"
+        self.command_pattern = re.compile(r"^todo\s+(.+?)(?:\s+/on\s+(.+))?$")
         self.unmatched_command_pattern_message = "Use: todo <description>"
+        self.invalid_date_message = "Invalid todo date. Use YYYY-MM-DD."
         self.success_message_prefix = "Added:"
         self.minimum_description_length = 1
         self.maximum_description_length = 500
         self.task_description = task_description
+        self.due_date = due_date
 
     @classmethod
     def match_user_response_with_command_keyword(cls, user_response: str) -> bool:
@@ -50,13 +52,20 @@ class CommandToDo(Command):
         if matched_command_pattern is None:
             return command.unmatched_command_pattern_message
 
-        parsed_command = cls(matched_command_pattern.group(1))
+        date_text = matched_command_pattern.group(2)
+        due_date = None
+        if date_text is not None:
+            parsed = _parse_datetime_parts(date_text)
+            if parsed is None or parsed[1] is not None:
+                return command.invalid_date_message
+            due_date = parsed[0]
+        parsed_command = cls(matched_command_pattern.group(1), due_date)
         return parsed_command
 
     def execute_command(self, tasks: Tasks) -> str:
         """Execute the command."""
 
-        task = TodoTask(self.task_description)
+        task = TodoTask(self.task_description, self.due_date)
         tasks.append(task)
         tasks.save()
         success_message = f"{self.success_message_prefix}\n{task}"
@@ -69,7 +78,7 @@ class CommandDeadline(Command):
     def __init__(self, task_description: str, due_datetime: datetime) -> None:
         self.command_keyword = "deadline"
         self.command_usage = "deadline <description> /by YYYY-MM-DD [HHMM]"
-        self.command_pattern = re.compile(r"^deadline\s+(.+?)\s+/by\s+(.+)$")
+        self.command_pattern = re.compile(r"^deadline\s+(.+?)\s+/(?:by|due)\s+(.+)$")
         self.unmatched_command_pattern_message = f"Use: {self.command_usage}"
         self.invalid_datetime_message = (
             "Invalid deadline. Use a valid date as YYYY-MM-DD, "

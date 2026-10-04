@@ -1,80 +1,34 @@
-"""Provide Bao's local Gradio user interface."""
+"""Launch Bao's Streamlit web interface.
+
+This compatibility entry point keeps ``python -m bao.ui`` working while the
+application's supported UI is implemented in :mod:`bao.streamlit_app`.
+"""
 
 from __future__ import annotations
 
-from collections.abc import Sequence
-from typing import Any
-
-import gradio as gr
-
-from .read_task_commands import Command
-from .tasks import Tasks
-
-Message = dict[str, str]
+import os
+import subprocess
+import sys
+from pathlib import Path
 
 
-def submit_command(
-    user_response: str, history: Sequence[Message] | None
-) -> tuple[str, list[Message]]:
-    """Execute one Bao command and append the exchange to the chat history."""
-    messages = list(history or [])
-    matched_command = Command.parse_user_response_with_command_pattern(user_response)
-
-    if isinstance(matched_command, str):
-        response = matched_command
-    elif matched_command is None:
-        response = ""
-    else:
-        response = matched_command.execute_command(Tasks())
-
-    messages.extend(
-        [
-            {"role": "user", "content": user_response},
-            {"role": "assistant", "content": response},
-        ]
-    )
-    return "", messages
-
-
-def clear_conversation() -> tuple[list[Message], str]:
-    """Return empty values for the chat and command input."""
-    return [], ""
-
-
-def create_app() -> Any:
-    """Build and return Bao's local Gradio application."""
-    with gr.Blocks(title="Bao") as app:
-        chatbot = gr.Chatbot(label="Conversation")
-        command_input = gr.Textbox(
-            label="Command",
-            placeholder="Try: todo buy groceries",
-        )
-        with gr.Row():
-            submit = gr.Button("Submit", variant="primary")
-            clear = gr.Button("Clear")
-
-        submit_events = [command_input, chatbot]
-        submit.click(
-            submit_command,
-            inputs=[command_input, chatbot],
-            outputs=submit_events,
-        )
-        command_input.submit(
-            submit_command,
-            inputs=[command_input, chatbot],
-            outputs=submit_events,
-        )
-        clear.click(
-            clear_conversation,
-            outputs=[chatbot, command_input],
-        )
-    return app
-
-
-def main() -> None:
-    """Launch Bao's local web interface."""
-    create_app().launch(server_name="127.0.0.1")
+def main() -> int:
+    """Start Streamlit on Bao's local default address and port."""
+    app_path = Path(__file__).with_name("streamlit_app.py")
+    port = os.environ.get("BAO_SERVER_PORT", "7860")
+    command = [
+        sys.executable,
+        "-m",
+        "streamlit",
+        "run",
+        str(app_path),
+        "--server.address",
+        "127.0.0.1",
+        "--server.port",
+        port,
+    ]
+    return subprocess.call(command)
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

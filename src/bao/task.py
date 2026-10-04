@@ -2,7 +2,7 @@
 EventTask, and RecurringTask.
 """
 
-from datetime import datetime, time
+from datetime import date, datetime, time
 from typing import Any
 
 
@@ -18,6 +18,7 @@ class Task:
         task_type: str | None = None,
         done: bool = False,
         note: str | None = None,
+        task_id: int | None = None,
     ) -> None:
         """
         Initialize a task with its shared fields.
@@ -28,6 +29,7 @@ class Task:
         task_type (str | None): An optional type marker for a generic task.
         done (bool): Whether the task is complete.
         note (str | None): An optional note attached to the task.
+        task_id (int | None): The persisted ID shared across task types.
 
         Returns:
         --------
@@ -37,6 +39,7 @@ class Task:
         self.description = description
         self.done = done
         self.note = note
+        self.task_id = task_id
         if task_type is not None:
             self.task_type = task_type
 
@@ -49,6 +52,7 @@ class Task:
         dict[str, Any]: The shared task fields and its type marker.
         """
         return {
+            "task_id": self.task_id,
             "description": self.description,
             "done": self.done,
             "note": self.note,
@@ -121,6 +125,10 @@ class Task:
         if recurrence_rule:
             return f" (every: {recurrence_rule})"
 
+        due_date = getattr(self, "due_date", None)
+        if due_date is not None:
+            return f" (on: {due_date:%b %d %Y})"
+
         due_datetime = getattr(self, "due_datetime", None)
         if due_datetime is not None:
             deadline_text = due_datetime.strftime("%b %d %Y")
@@ -144,10 +152,28 @@ class Task:
 
 
 class TodoTask(Task):
-    """A task without type-specific timing fields."""
+    """A task with an optional calendar date."""
 
     # Identity
     task_type = "todo"
+
+    def __init__(
+        self,
+        description: str,
+        due_date: date | None = None,
+        done: bool = False,
+        note: str | None = None,
+        task_id: int | None = None,
+    ) -> None:
+        """Initialize a todo task with an optional date."""
+        super().__init__(description, done=done, note=note, task_id=task_id)
+        self.due_date = due_date
+
+    def to_dict(self) -> dict[str, Any]:
+        """Return shared and todo date fields."""
+        task = super().to_dict()
+        task["due_date"] = self.due_date.isoformat() if self.due_date else None
+        return task
 
 
 class DeadlineTask(Task):
@@ -162,10 +188,11 @@ class DeadlineTask(Task):
         due_datetime: datetime | None = None,
         done: bool = False,
         note: str | None = None,
+        task_id: int | None = None,
     ) -> None:
         """Initialize a deadline task with its applicable fields."""
         # State
-        super().__init__(description, done=done, note=note)
+        super().__init__(description, done=done, note=note, task_id=task_id)
         self.due_datetime = due_datetime
 
     def to_dict(self) -> dict[str, Any]:
@@ -190,10 +217,11 @@ class EventTask(Task):
         end_datetime: datetime | None = None,
         done: bool = False,
         note: str | None = None,
+        task_id: int | None = None,
     ) -> None:
         """Initialize an event task with its applicable fields."""
         # State
-        super().__init__(description, done=done, note=note)
+        super().__init__(description, done=done, note=note, task_id=task_id)
         self.start_datetime = start_datetime
         self.end_datetime = end_datetime
 
@@ -221,10 +249,11 @@ class RecurringTask(Task):
         recurrence_rule: str | None = None,
         done: bool = False,
         note: str | None = None,
+        task_id: int | None = None,
     ) -> None:
         """Initialize a recurring task with its applicable fields."""
         # State
-        super().__init__(description, done=done, note=note)
+        super().__init__(description, done=done, note=note, task_id=task_id)
         self.recurrence_rule = recurrence_rule
 
     def to_dict(self) -> dict[str, Any]:
