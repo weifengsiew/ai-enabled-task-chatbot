@@ -56,4 +56,4 @@ def main() -> None:
     farewell()
 
 def intentionally_broken:
-    invalid_push
+    invalid_pushes
