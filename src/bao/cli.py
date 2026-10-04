@@ -55,5 +55,5 @@ def main() -> None:
     chat()
     farewell()
 
-def hohoho:
-    illegal_commit
+def intentionally_broken:
+    invalid_code
