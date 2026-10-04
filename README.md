@@ -77,6 +77,16 @@ To trigger the pipeline manually from VS Code:
 
 The manual pipeline runs the project's configured format, lint, type-checking, and test checks.
 
+### Contributor workflow
+
+1. Create a branch in VS Code.
+2. Make and test your changes.
+3. Stage and commit the changes.
+4. Push the branch.
+5. Open a merge request in GitLab.
+6. Review the merge request and approve it, if you are an approver.
+7. Merge once the required checks and approvals pass.
+
 ## Commands supported by `bao`
 
 | Command | Purpose |
