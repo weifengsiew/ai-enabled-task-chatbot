@@ -2,7 +2,7 @@
 
 ## Status
 
-Proposed
+Implemented
 
 ## User story
 
@@ -38,36 +38,35 @@ through the terminal.
 
 ## Tests covered
 
-- Not yet implemented. Tests should verify command submission, Bao responses,
-  and conversation clearing when the UI is added.
+- `tests/test_ui.py` verifies command submission, saved-task responses, and
+  conversation clearing.
 
 ## Changes made
 
-The proposed implementation will:
+The implementation:
 
-- Add a new `src/bao/ui.py` module using Gradio.
-- Add Gradio as a project dependency in `pyproject.toml` and update `uv.lock`.
-- Leave the existing CLI and command modules unchanged.
-- Reuse the existing `Command` and `Tasks` classes rather than duplicating
+- Adds a new `src/bao/ui.py` module using Gradio.
+- Adds Gradio as a project dependency in `pyproject.toml` and updates `uv.lock`.
+- Leaves the existing CLI and command modules unchanged.
+- Reuses the existing `Command` and `Tasks` classes rather than duplicating
   command definitions.
 
 ## Code locations
 
-The following files are where the proposed changes will be added or made. No
-implementation changes have been made yet.
+The implementation changes are in:
 
-- `src/bao/ui.py` — Planned new module for the Gradio interface and message
-  submission handling.
-- `pyproject.toml` — Planned Gradio dependency addition.
-- `uv.lock` — Planned locked dependency update.
+- `src/bao/ui.py` — Gradio interface and message submission handling.
+- `tests/test_ui.py` — UI handler tests.
+- `pyproject.toml` — Gradio dependency.
+- `uv.lock` — Locked dependency update.
 
 ## CI check results
 
-- Pytest: [ ] Not run; UI is not implemented.
-- Ruff lint: [ ] Not run; UI is not implemented.
-- Ruff format: [ ] Not run; UI is not implemented.
-- Mypy: [ ] Not run; UI is not implemented.
-- Shared CI pipeline: [ ] Not run; UI is not implemented.
+- Pytest: [x] `uv run pytest` — 11 passed.
+- Ruff lint: [x] `uv run ruff check src tests` — passed.
+- Ruff format: [x] `uv run ruff format --check .` — passed.
+- Mypy: [x] `uv run mypy src tests` — passed.
+- Shared CI pipeline: [ ] Not run locally.
 
 ## Local UI details
 
