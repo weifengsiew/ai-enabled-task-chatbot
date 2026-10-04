@@ -2,11 +2,10 @@
 
 ## What is bao?
 
-`bao` is a command-line task tracker built during the AIAP 23a software engineering bootcamp.
-This repository contains two applications:
+`bao` is a command-line task tracker chatbot application. It consists of two versions.
 
-- `inherited/`: the original application used for the Day 2 refactoring exercise.
-- `src/bao/`: the main application developed from the course stages.
+- `inherited/`: original application with non-modular code.
+- `src/bao/`: main application with modular code.
 
 ## Setup
 
@@ -17,7 +16,7 @@ uv sync
 uv run python --version
 ```
 
-## Run and quality-check `inherited/bao`
+## Run `inherited/bao`
 
 Run the inherited application from the repository root:
 
@@ -25,21 +24,7 @@ Run the inherited application from the repository root:
 uv run python inherited/bao.py
 ```
 
-Run its tests:
-
-```bash
-uv run python -m pytest inherited/tests
-```
-
-Run its quality checks:
-
-```bash
-uv run ruff check .
-uv run mypy .
-uv run pytest
-```
-
-## Run and quality-check `src/bao`
+## Run `src/bao`
 
 Run the main application from the repository root:
 
@@ -50,35 +35,47 @@ uv run bao
 Tasks are persisted in `data/tasks.json`. The file and its parent directory are created when
 tasks are first saved.
 
-Run the `src/bao` tests:
+The GitLab CI pipeline configuration is:
 
-```bash
-uv run pytest
+```yaml
+image: python:3.13-slim
+
+stages:
+  - checks
+
+workflow:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+    - if: '$CI_PIPELINE_SOURCE == "api"'
+
+checks:
+  stage: checks
+  before_script:
+    - pip install --no-cache-dir uv
+    - uv sync --frozen
+  script:
+    - uv run ruff format --check .
+    - uv run ruff check src tests
+    - uv run mypy src tests
+    - uv run pytest
 ```
 
-Run the `src/bao` quality checks:
+### Trigger GitLab Continuous Integration Testing
+
+GitLab CI runs automatically when you push a commit or tag:
 
 ```bash
-uv run ruff format --check .
-uv run ruff check src tests
-uv run mypy src tests
-uv run pytest
+git push
 ```
 
-## CI checks
+To trigger the pipeline manually from VS Code:
 
-Before committing a feature, run the same checks as GitLab CI:
+1. Install and authenticate the **GitLab for VS Code** extension.
+2. Press `Cmd/Ctrl + Shift + P`.
+3. Run **GitLab: Pipeline Actions - View, Create, Retry, or Cancel**.
+4. Select **Create New Pipeline from Current Branch**.
 
-```bash
-uv sync --frozen
-uv run ruff format --check .
-uv run ruff check src tests
-uv run mypy src tests
-uv run pytest
-```
-
-A feature is ready only when all commands pass. The `inherited/` application is maintained
-separately and is not part of the main application CI checks.
+The manual pipeline runs the project's configured format, lint, type-checking, and test checks.
 
 ## Commands supported by `bao`
 
@@ -257,10 +254,4 @@ Add tests for each supported task type, a valid type with no matching tasks, and
 input to `tests/test_bao.py`. Keep `inherited/tests/` for tests of the separate inherited
 application.
 
-Then run the tests and quality checks:
-
-```bash
-uv run pytest
-uv run ruff check .
-uv run mypy .
-```
+Then trigger GitLab CI from VS Code using the instructions in [Trigger GitLab CI](#trigger-gitlab-ci).

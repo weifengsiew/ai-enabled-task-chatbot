@@ -96,6 +96,38 @@ my-project/
 
 ## GitLab CI/CD setup
 
+GitLab reads `.gitlab-ci.yml` from the repository root. In this project, the
+pipeline is allowed to start in two ways:
+
+- **On push:** GitLab automatically runs the pipeline when a commit or tag is
+  pushed.
+- **Manually:** In VS Code, authenticate the **GitLab for VS Code** extension,
+  open the Command Palette, run **GitLab: Pipeline Actions - View, Create,
+  Retry, or Cancel**, and select **Create New Pipeline from Current Branch**.
+
+The relevant configuration is:
+
+```yaml
+workflow:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+    - if: '$CI_PIPELINE_SOURCE == "api"'
+```
+
+`CI_PIPELINE_SOURCE == "push"` permits push-triggered pipelines, while
+`CI_PIPELINE_SOURCE == "api"` permits pipelines started by the VS Code
+extension. These rules start the pipeline; the `checks` job then runs the
+configured format, lint, type, and test checks.
+
+This is different from `when: manual`, which pauses one particular job until a
+user selects **Run** in an existing pipeline.
+
+After updating `.gitlab-ci.yml`, commit and push the change. GitLab will run
+the pipeline automatically, or you can trigger it manually from VS Code using
+the steps above.
+
+## GitHub Actions setup
+
 Create this file in your repository:
 
 ```text

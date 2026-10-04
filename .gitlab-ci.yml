@@ -3,6 +3,11 @@ image: python:3.13-slim
 stages:
   - checks
 
+workflow:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+    - if: '$CI_PIPELINE_SOURCE == "api"'
+
 checks:
   stage: checks
   before_script:
