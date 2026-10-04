@@ -65,7 +65,6 @@ This project explores how LLM-powered conversational interfaces can make everyda
 | Web application interface | Streamlit |
 | LLM integration | OpenAI Python SDK, using an OpenAI-compatible endpoint |
 | Dependency and environment management | uv |
-| Build backend | uv_build |
 | Automated testing | pytest |
 | Linting and formatting | Ruff |
 | Type checking | mypy |
