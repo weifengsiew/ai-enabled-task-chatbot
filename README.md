@@ -2,15 +2,11 @@
 
 ## What is bao?
 
-`bao` is a command-line task tracker chatbot application. It consists of two versions.
+`bao` is a command-line task tracker chatbot application implemented in `src/bao/`.
 
-- `inherited/`: original application with non-modular code.
-- `src/bao/`: main application with modular code.
-
-## Documentation
+## User guide
 
 - [Streamlit User Guide](STREAMLIT_USER_GUIDE.md)
-- [Developer documentation](docs/)
 
 ## Setup
 
@@ -34,69 +30,30 @@ uv run bao
 Tasks are persisted in `data/tasks.json`. The file and its parent directory are created when
 tasks are first saved.
 
-### Run `inherited/bao`
-
-Run the inherited application from the repository root:
-
-```bash
-uv run python inherited/bao.py
-```
-
 ## Contributor workflow
 
 1. Create a branch in VS Code.
 2. Make and test your changes.
 3. Stage and commit the changes.
 4. Push the branch.
-5. Open a merge request in GitLab.
-6. Review the merge request and approve it, if you are an approver.
+5. Open a pull request on GitHub.
+6. Review the pull request and address the required checks.
 7. Merge once the required checks and approvals pass.
 
 ## Continuous Integration (CI)
 
-The GitLab CI pipeline configuration is:
+GitHub Actions runs the project's formatting, linting, type-checking, and test checks on pushes
+and pull requests.
 
-```yaml
-image: python:3.13-slim
-
-stages:
-  - checks
-
-workflow:
-  rules:
-    - if: '$CI_PIPELINE_SOURCE == "push"'
-    - if: '$CI_PIPELINE_SOURCE == "api"'
-
-checks:
-  stage: checks
-  before_script:
-    - pip install --no-cache-dir uv
-    - uv sync --frozen
-  script:
-    - uv run ruff format --check .
-    - uv run ruff check src tests
-    - uv run mypy src tests
-    - uv run pytest
-```
-
-### Trigger CI automatically on push
-
-GitLab CI runs automatically when you push a commit or tag:
+To run the same checks locally:
 
 ```bash
-git push
+uv sync --frozen
+uv run ruff format --check .
+uv run ruff check src tests
+uv run mypy src tests
+uv run pytest
 ```
-
-### Trigger CI manually from VS Code
-
-To trigger the pipeline manually from VS Code:
-
-1. Install and authenticate the **GitLab for VS Code** extension.
-2. Press `Cmd/Ctrl + Shift + P`.
-3. Run **GitLab: Pipeline Actions - View, Create, Retry, or Cancel**.
-4. Select **Create New Pipeline from Current Branch**.
-
-The manual pipeline runs the project's configured format, lint, type-checking, and test checks.
 
 ## Commands supported by `bao`
 
@@ -271,10 +228,9 @@ Finally, register `CommandFilter` in the `COMMAND_CLASSES` tuple in
 through `COMMAND_CLASSES`, calls the keyword matcher, then calls the parser. Only the parsed
 command's `execute_command` method reads the task collection; it does not change it.
 
-### 7. Trigger CI and complete the merge request
+### 7. Trigger CI and complete the pull request
 
 Add tests for each supported task type, a valid type with no matching tasks, and invalid filter
-input to `tests/test_bao.py`. Keep `inherited/tests/` for tests of the separate inherited
-application.
+input to `tests/test_bao.py`.
 
-Then trigger GitLab CI from VS Code using instructions in [Trigger CI manually from VS Code](#trigger-ci-manually-from-vs-code).
+Then open a pull request on GitHub and wait for the GitHub Actions checks to pass.
