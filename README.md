@@ -35,11 +35,23 @@ This project explores how LLM-powered conversational interfaces can make everyda
 
 ## Setup and run `bao`
 
-Requires Python 3.13 and uv. From the repository root:
+Requires Python 3.13 and uv. From the repository root, install dependencies and start the CLI:
 
+```bash
 uv sync
 uv run python --version
 uv run bao
+```
+
+To start the Streamlit app instead, run:
+
+```bash
+uv run streamlit run src/bao/streamlit_app.py \
+  --server.address 127.0.0.1 \
+  --server.port 7860
+```
+
+Then open [http://127.0.0.1:7860](http://127.0.0.1:7860) in your browser.
 
 ## Commands supported by `bao`
 
