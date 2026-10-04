@@ -16,15 +16,9 @@ uv sync
 uv run python --version
 ```
 
-## Run `inherited/bao`
+## Run the application
 
-Run the inherited application from the repository root:
-
-```bash
-uv run python inherited/bao.py
-```
-
-## Run `src/bao`
+### Run `src/bao`
 
 Run the main application from the repository root:
 
@@ -34,6 +28,26 @@ uv run bao
 
 Tasks are persisted in `data/tasks.json`. The file and its parent directory are created when
 tasks are first saved.
+
+### Run `inherited/bao`
+
+Run the inherited application from the repository root:
+
+```bash
+uv run python inherited/bao.py
+```
+
+## Contributor workflow
+
+1. Create a branch in VS Code.
+2. Make and test your changes.
+3. Stage and commit the changes.
+4. Push the branch.
+5. Open a merge request in GitLab.
+6. Review the merge request and approve it, if you are an approver.
+7. Merge once the required checks and approvals pass.
+
+## Continuous Integration (CI)
 
 The GitLab CI pipeline configuration is:
 
@@ -60,13 +74,15 @@ checks:
     - uv run pytest
 ```
 
-### Trigger GitLab Continuous Integration Testing
+### Trigger CI automatically on push
 
 GitLab CI runs automatically when you push a commit or tag:
 
 ```bash
 git push
 ```
+
+### Trigger CI manually from VS Code
 
 To trigger the pipeline manually from VS Code:
 
@@ -76,16 +92,6 @@ To trigger the pipeline manually from VS Code:
 4. Select **Create New Pipeline from Current Branch**.
 
 The manual pipeline runs the project's configured format, lint, type-checking, and test checks.
-
-### Contributor workflow
-
-1. Create a branch in VS Code.
-2. Make and test your changes.
-3. Stage and commit the changes.
-4. Push the branch.
-5. Open a merge request in GitLab.
-6. Review the merge request and approve it, if you are an approver.
-7. Merge once the required checks and approvals pass.
 
 ## Commands supported by `bao`
 
@@ -136,6 +142,8 @@ Note: include the monthly figures
 > bye
 Later.
 ```
+
+## Architecture
 
 ### `src/bao/` file responsibilities
 
@@ -258,10 +266,10 @@ Finally, register `CommandFilter` in the `COMMAND_CLASSES` tuple in
 through `COMMAND_CLASSES`, calls the keyword matcher, then calls the parser. Only the parsed
 command's `execute_command` method reads the task collection; it does not change it.
 
-### 7. Run tests and quality checks
+### 7. Trigger CI and complete the merge request
 
 Add tests for each supported task type, a valid type with no matching tasks, and invalid filter
 input to `tests/test_bao.py`. Keep `inherited/tests/` for tests of the separate inherited
 application.
 
-Then trigger GitLab CI from VS Code using the instructions in [Trigger GitLab CI](#trigger-gitlab-ci).
+Then trigger GitLab CI from VS Code using the instructions in [Trigger CI manually from VS Code](#trigger-ci-manually-from-vs-code).
