@@ -272,4 +272,4 @@ Add tests for each supported task type, a valid type with no matching tasks, and
 input to `tests/test_bao.py`. Keep `inherited/tests/` for tests of the separate inherited
 application.
 
-Then trigger GitLab CI from VS Code using the instructions in [Trigger CI manually from VS Code](#trigger-ci-manually-from-vs-code).
+Then trigger GitLab CI from VS Code using instructions in [Trigger CI manually from VS Code](#trigger-ci-manually-from-vs-code).
