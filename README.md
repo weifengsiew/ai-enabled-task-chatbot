@@ -4,14 +4,22 @@ An AI-enabled conversational task manager for capturing, organizing, and retriev
 deadlines, events, and recurring tasks. It combines explicit task commands with a natural-language interface powered 
 by an LLM, so users can manage tasks without navigating complex command syntax.
 
-## Highlights
+## Feature Highlights
 
-- Conversational task management through a CLI and Streamlit interface.
-- Support for todos, deadlines, events, recurring tasks, notes, filtering, and search.
-- JSON persistence for a simple, inspectable local data store.
-- Python application structure with automated formatting, linting, type checking, tests, and GitHub Actions CI.
+- Manage tasks conversationally through a CLI or Streamlit interface.
+- Create, search, update, filter, and view tasks using easy-to-use buttons.
 
-## Video demo
+## Best Practices Highlights
+
+- Object-oriented programming (OOP): Shared `Task` and `Command` base classes with subclasses for specific task and command types.
+- Modular architecture:
+  - Interface modules: `cli.py` and `streamlit_app.py` handle user interaction.
+  - Command modules: `read_task_commands.py`, `add_task_commands.py`, and `modify_task_commands.py` handle task queries, creation, and updates.
+  - Supporting modules: `parser.py` parses dates, times, and task numbers; `task.py` defines task types and their display and serialization; `tasks.py` manages the task list and JSON loading and saving.
+- Automated quality checks: GitHub Actions runs tests, Ruff linting and formatting, and mypy type hint checks.
+- Reproducible dependencies: `uv.lock` records dependency versions for consistent installs.
+
+## Video Demo
 
 Click the image to watch the AI Enabled Task Chatbot video demo on YouTube (no download required):
 
