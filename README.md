@@ -25,7 +25,7 @@ Watch the AI-Enabled Task Chatbot demo on YouTube:
 - Automated quality checks: GitHub Actions runs tests, Ruff linting and formatting, and mypy type hint checks.
 - Reproducible dependencies: `uv.lock` records dependency versions for consistent installs.
 
-## Why This Project
+## Project Motivation
 
 This project explores how conversational interfaces can make everyday task management more natural while keeping tasks structured and the codebase testable and easy to extend.
 
