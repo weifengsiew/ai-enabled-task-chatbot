@@ -33,52 +33,13 @@ This project explores how conversational interfaces can make everyday task manag
 - Automated quality checks: GitHub Actions runs tests, ruff linting and formatting, and mypy type hint checking.
 - Reproducible dependencies: `uv.lock` records dependency versions for consistent installs.
 
-## Setup
+## Setup and run `bao`
 
-The project uses Python 3.13 and `uv`:
+Requires Python 3.13 and uv. From the repository root:
 
-```bash
 uv sync
 uv run python --version
-```
-
-## Run the application
-
-### Run `src/bao`
-
-Run the main application from the repository root:
-
-```bash
 uv run bao
-```
-
-Tasks are persisted in `data/tasks.json`. The file and its parent directory are created when
-tasks are first saved.
-
-## Contributor workflow
-
-1. Create a branch in VS Code.
-2. Make and test your changes.
-3. Stage and commit the changes.
-4. Push the branch.
-5. Open a pull request on GitHub.
-6. Review the pull request and address the required checks.
-7. Merge once the required checks and approvals pass.
-
-## Continuous Integration (CI)
-
-GitHub Actions runs the project's formatting, linting, type-checking, and test checks on pushes
-and pull requests.
-
-To run the same checks locally:
-
-```bash
-uv sync --frozen
-uv run ruff format --check .
-uv run ruff check src tests
-uv run mypy src tests
-uv run pytest
-```
 
 ## Commands supported by `bao`
 
@@ -97,8 +58,6 @@ uv run pytest
 | `note <number> <note>` | Replace a task's note. |
 | `delete <number>` | Delete a task. |
 | `bye` | Exit the interactive session. |
-
-
 
 ## Example conversation
 
@@ -129,6 +88,32 @@ Note: include the monthly figures
 > bye
 Later.
 ```
+
+## Contributor workflow
+
+1. Create a branch in VS Code.
+2. Make and test your changes.
+3. Stage and commit the changes.
+4. Push the branch.
+5. Open a pull request on GitHub.
+6. Review the pull request and address the required checks.
+7. Merge once the required checks and approvals pass.
+
+## Continuous Integration (CI)
+
+GitHub Actions runs the project's formatting, linting, type-checking, and test checks on pushes
+and pull requests.
+
+To run the same checks locally:
+
+```bash
+uv sync --frozen
+uv run ruff format --check .
+uv run ruff check src tests
+uv run mypy src tests
+uv run pytest
+```
+
 
 ## Architecture
 
