@@ -10,17 +10,17 @@ Watch the AI-Enabled Task Chatbot demo on YouTube:
 
 [![Watch the AI-Enabled Task Chatbot demo](https://img.youtube.com/vi/Vv8rg3zCtYU/maxresdefault.jpg)](https://youtu.be/Vv8rg3zCtYU)
 
-## User guide
+## User Guide
 
 - [Streamlit User Guide](STREAMLIT_USER_GUIDE.md)
 
 ## Project Motivation
 
-This project explores how conversational interfaces can make everyday task management more natural while keeping tasks structured and the codebase testable and easy to extend.
+This project explores how LLM-powered conversational interfaces can make everyday task management feel more natural, while Python keeps tasks structured and the codebase testable and easy to extend.
 
 ## Chatbot Feature Highlights
 
-- Manage tasks conversationally through a CLI or Streamlit interface.
+- Manage tasks conversationally through a Command Line Interface (CLI) or Streamlit App Interface.
 - Create, search, update, filter, and view tasks using easy-to-use buttons.
 
 ## Best Practices Highlights
@@ -33,7 +33,7 @@ This project explores how conversational interfaces can make everyday task manag
 - Automated quality checks: GitHub Actions runs tests, ruff linting and formatting, and mypy type hint checking.
 - Reproducible dependencies: `uv.lock` records dependency versions for consistent installs.
 
-## Setup and run `bao`
+## Setup and Run `bao`
 
 Requires Python 3.13 and uv. From the repository root:
 
@@ -41,7 +41,7 @@ uv sync
 uv run python --version
 uv run bao
 
-## Commands supported by `bao`
+## Commands Supported by `bao`
 
 | Command | Purpose |
 | --- | --- |
@@ -59,7 +59,7 @@ uv run bao
 | `delete <number>` | Delete a task. |
 | `bye` | Exit the interactive session. |
 
-## Example conversation
+## Example Conversation
 
 ```text
 $ uv run bao
@@ -89,17 +89,18 @@ Note: include the monthly figures
 Later.
 ```
 
-## Contributor workflow
+## Contributor Workflow
 
-1. Create a branch in VS Code.
-2. Make and test your changes.
-3. Stage and commit the changes.
-4. Push the branch.
-5. Open a pull request on GitHub.
-6. Review the pull request and address the required checks.
-7. Merge once the required checks and approvals pass.
+1. Fork the repository on GitHub.
+2. Clone your fork and open it in VS Code.
+3. Create a branch for your changes.
+4. Make your changes and run the project’s quality checks.
+5. Commit and push your changes to your fork.
+6. Open a pull request against the original repository.
+7. Address review feedback and ensure required checks pass.
+8. A maintainer merges the pull request after required approvals.
 
-## Continuous Integration (CI)
+## Continuous Integration (CI) pipeline
 
 GitHub Actions runs the project's formatting, linting, type-checking, and test checks on pushes
 and pull requests.
@@ -113,7 +114,6 @@ uv run ruff check src tests
 uv run mypy src tests
 uv run pytest
 ```
-
 
 ## Architecture
 
