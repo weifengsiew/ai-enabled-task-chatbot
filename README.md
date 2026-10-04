@@ -4,7 +4,7 @@ An AI-enabled conversational task manager for capturing, organizing, and retriev
 deadlines, events, and recurring tasks. It combines explicit task commands with a natural-language interface powered 
 by an LLM, so users can manage tasks without navigating complex command syntax.
 
-## Feature Highlights
+## Chatbot Feature Highlights
 
 - Manage tasks conversationally through a CLI or Streamlit interface.
 - Create, search, update, filter, and view tasks using easy-to-use buttons.
@@ -21,13 +21,13 @@ by an LLM, so users can manage tasks without navigating complex command syntax.
 
 ## Video Demo
 
-Click the image to watch the AI Enabled Task Chatbot video demo on YouTube (no download required):
+Watch the AI-Enabled Task Chatbot demo on YouTube:
 
-[![AI Enabled Task Chatbot video demo](https://img.youtube.com/vi/Vv8rg3zCtYU/maxresdefault.jpg)](https://youtu.be/Vv8rg3zCtYU)
+[![Watch the AI-Enabled Task Chatbot demo](https://img.youtube.com/vi/Vv8rg3zCtYU/maxresdefault.jpg)](https://youtu.be/Vv8rg3zCtYU)
 
-## Why this project
+## Why This Project
 
-This project explores how conversational interfaces can make everyday task tracking faster and more natural while keeping the underlying task model structured, testable, and easy to extend.
+This project explores how conversational interfaces can make everyday task management more natural while keeping tasks structured and the codebase testable and easy to extend.
 
 ## User guide
 
