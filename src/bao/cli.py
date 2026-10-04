@@ -11,7 +11,7 @@ def greeting() -> None:
 
 def chat() -> None:
     """
-    Run the interactive task-management conversation.
+    Run the interactive conversation.
 
     Returns:
     --------
