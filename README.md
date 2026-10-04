@@ -1,8 +1,8 @@
 # AI-Enabled Task Chatbot
 
-An AI-enabled conversational task manager for capturing, organising, and retrieving your everyday tasks, such as todos, deadlines, events and recurring tasks.
-This project combines explicit task commands with an LLM-enabled natural language interface,
-so users can manage tasks without navigating a complex command syntaxes.
+An AI-enabled conversational task manager for capturing, organizing, and retrieving everyday tasks, including to-dos, 
+deadlines, events, and recurring tasks. It combines explicit task commands with a natural-language interface powered 
+by an LLM, so users can manage tasks without navigating complex command syntax.
 
 ## Highlights
 
