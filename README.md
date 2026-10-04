@@ -4,6 +4,12 @@ An AI-enabled conversational task manager for capturing, organizing, and retriev
 deadlines, events, and recurring tasks. It combines explicit task commands with a natural-language interface powered 
 by an LLM, so users can manage tasks without navigating complex command syntax.
 
+## Video Demo
+
+Watch the AI-Enabled Task Chatbot demo on YouTube:
+
+[![Watch the AI-Enabled Task Chatbot demo](https://img.youtube.com/vi/Vv8rg3zCtYU/maxresdefault.jpg)](https://youtu.be/Vv8rg3zCtYU)
+
 ## Chatbot Feature Highlights
 
 - Manage tasks conversationally through a CLI or Streamlit interface.
@@ -18,12 +24,6 @@ by an LLM, so users can manage tasks without navigating complex command syntax.
   - Supporting modules: `parser.py` parses dates, times, and task numbers; `task.py` defines task types and their display and serialization; `tasks.py` manages the task list and JSON loading and saving.
 - Automated quality checks: GitHub Actions runs tests, Ruff linting and formatting, and mypy type hint checks.
 - Reproducible dependencies: `uv.lock` records dependency versions for consistent installs.
-
-## Video Demo
-
-Watch the AI-Enabled Task Chatbot demo on YouTube:
-
-[![Watch the AI-Enabled Task Chatbot demo](https://img.youtube.com/vi/Vv8rg3zCtYU/maxresdefault.jpg)](https://youtu.be/Vv8rg3zCtYU)
 
 ## Why This Project
 
