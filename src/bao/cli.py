@@ -5,7 +5,7 @@ from .tasks import Tasks
 
 
 def greeting() -> None:
-    """Print Bao's opening greeting."""
+    """Print Bao's greeting."""
     print("Hello! I'm bao. What needs doing?")
 
 
