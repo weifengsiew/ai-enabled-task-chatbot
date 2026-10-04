@@ -26,7 +26,9 @@ As a [user], I want [capability], so that [benefit].
 
 ## Code locations
 
-- `<path>` — [description]
+List only the files where the proposed changes will be added or made.
+
+- `<path>` — [description of the proposed change]
 
 ## CI check results
 
