@@ -10,6 +10,14 @@ Watch the AI-Enabled Task Chatbot demo on YouTube:
 
 [![Watch the AI-Enabled Task Chatbot demo](https://img.youtube.com/vi/Vv8rg3zCtYU/maxresdefault.jpg)](https://youtu.be/Vv8rg3zCtYU)
 
+## User guide
+
+- [Streamlit User Guide](STREAMLIT_USER_GUIDE.md)
+
+## Project Motivation
+
+This project explores how conversational interfaces can make everyday task management more natural while keeping tasks structured and the codebase testable and easy to extend.
+
 ## Chatbot Feature Highlights
 
 - Manage tasks conversationally through a CLI or Streamlit interface.
@@ -17,21 +25,13 @@ Watch the AI-Enabled Task Chatbot demo on YouTube:
 
 ## Best Practices Highlights
 
-- Object-oriented programming (OOP): Shared `Task` and `Command` base classes with subclasses for specific task and command types.
+- Object-oriented programming: Shared `Task` and `Command` base classes with subclasses for specific task and command types.
 - Modular architecture:
   - Interface modules: `cli.py` and `streamlit_app.py` handle user interaction.
   - Command modules: `read_task_commands.py`, `add_task_commands.py`, and `modify_task_commands.py` handle task queries, creation, and updates.
   - Supporting modules: `parser.py` parses dates, times, and task numbers; `task.py` defines task types and their display and serialization; `tasks.py` manages the task list and JSON loading and saving.
-- Automated quality checks: GitHub Actions runs tests, Ruff linting and formatting, and mypy type hint checks.
+- Automated quality checks: GitHub Actions runs tests, ruff linting and formatting, and mypy type hint checking.
 - Reproducible dependencies: `uv.lock` records dependency versions for consistent installs.
-
-## Project Motivation
-
-This project explores how conversational interfaces can make everyday task management more natural while keeping tasks structured and the codebase testable and easy to extend.
-
-## User guide
-
-- [Streamlit User Guide](STREAMLIT_USER_GUIDE.md)
 
 ## Setup
 
