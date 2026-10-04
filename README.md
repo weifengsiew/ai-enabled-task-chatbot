@@ -1,14 +1,25 @@
-# bao
+# AI-Enabled Task Chatbot
 
-## What is bao?
+An AI-enabled conversational task manager for capturing, organising, and retrieving todos, deadlines, events, recurring tasks, notes, and searches.
 
-`bao` is a command-line task tracker chatbot application implemented in `src/bao/`.
+The project combines a natural-language interface with explicit task commands so users can manage work without navigating a complex form-based workflow.
+
+## Highlights
+
+- Conversational task management through a CLI and Streamlit interface.
+- Support for todos, deadlines, events, recurring tasks, notes, filtering, and search.
+- JSON persistence for a simple, inspectable local data store.
+- Python application structure with automated formatting, linting, type checking, tests, and GitHub Actions CI.
 
 ## Video demo
 
 Click the image to watch the AI Enabled Task Chatbot video demo on YouTube (no download required):
 
 [![AI Enabled Task Chatbot video demo](https://img.youtube.com/vi/Vv8rg3zCtYU/maxresdefault.jpg)](https://youtu.be/Vv8rg3zCtYU)
+
+## Why this project
+
+This project explores how conversational interfaces can make everyday task tracking faster and more natural while keeping the underlying task model structured, testable, and easy to extend.
 
 ## User guide
 
