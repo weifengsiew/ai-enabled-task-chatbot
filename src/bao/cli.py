@@ -54,3 +54,6 @@ def main() -> None:
     greeting()
     chat()
     farewell()
+
+def hohoho:
+    hahaha
