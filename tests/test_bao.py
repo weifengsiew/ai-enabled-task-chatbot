@@ -15,8 +15,9 @@ def isolated_data_directory(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> 
     monkeypatch.chdir(tmp_path)
 
 
-def run_session(monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str],
-                *commands: str) -> str:
+def run_session(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str], *commands: str
+) -> str:
     """Supply console commands, run the chat loop, and return captured output."""
     entries = iter(commands)
     monkeypatch.setattr(builtins, "input", lambda _prompt="": next(entries))
@@ -24,8 +25,11 @@ def run_session(monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[s
     return capsys.readouterr().out
 
 
-def assert_session(monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str],
-                   steps: list[tuple[str, str]]) -> None:
+def assert_session(
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+    steps: list[tuple[str, str]],
+) -> None:
     """Run command/output pairs and check the complete output; may save tasks."""
     output = run_session(
         monkeypatch,
@@ -36,8 +40,9 @@ def assert_session(monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixtur
     assert output == "".join(expected for _, expected in steps)
 
 
-def test_adding_and_listing(monkeypatch: pytest.MonkeyPatch,
-                            capsys: pytest.CaptureFixture[str]) -> None:
+def test_adding_and_listing(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
     """Verify adding and listing each task kind."""
     steps = [
         # adding todo
@@ -79,8 +84,9 @@ def test_adding_and_listing(monkeypatch: pytest.MonkeyPatch,
     assert_session(monkeypatch, capsys, steps)
 
 
-def test_marking_unmarking_noting_and_deleting(monkeypatch: pytest.MonkeyPatch,
-                                              capsys: pytest.CaptureFixture[str]) -> None:
+def test_marking_unmarking_noting_and_deleting(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
     """Verify marking, unmarking, noting, and deleting."""
     updated_list = (
         "1. [T][ ]read paper\n"
@@ -130,8 +136,9 @@ def test_marking_unmarking_noting_and_deleting(monkeypatch: pytest.MonkeyPatch,
     assert_session(monkeypatch, capsys, steps)
 
 
-def test_due_queries_by_date_and_time(monkeypatch: pytest.MonkeyPatch,
-                                     capsys: pytest.CaptureFixture[str]) -> None:
+def test_due_queries_by_date_and_time(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
     """Verify due queries can filter deadlines by date and optional time."""
     run_session(
         monkeypatch,
@@ -162,15 +169,51 @@ def test_due_queries_by_date_and_time(monkeypatch: pytest.MonkeyPatch,
     assert_session(monkeypatch, capsys, steps)
 
 
-def test_invalid_inputs(monkeypatch: pytest.MonkeyPatch,
-                        capsys: pytest.CaptureFixture[str]) -> None:
+def test_filter_by_task_type(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """Verify filtering by task type and handling valid empty filters."""
+    run_session(
+        monkeypatch,
+        capsys,
+        "todo buy groceries",
+        "deadline submit report /by 2026-10-10",
+        "event team meeting /from 2026-10-12 0900 /to 2026-10-12 1000",
+        "bye",
+    )
+
+    steps = [
+        ("filter todo", "1. [T][ ]buy groceries\n"),
+        ("filter deadline", "1. [D][ ]submit report (by: Oct 10 2026)\n"),
+        (
+            "filter event",
+            "1. [E][ ]team meeting (from: 2026-10-12 09:00 to: 2026-10-12 10:00)\n",
+        ),
+        ("filter recurring", 'No tasks found of type "recurring".\n'),
+        (
+            "list",
+            (
+                "1. [T][ ]buy groceries\n"
+                "2. [D][ ]submit report (by: Oct 10 2026)\n"
+                "3. [E][ ]team meeting (from: 2026-10-12 09:00 to: 2026-10-12 10:00)\n"
+                "That's 3 on your plate.\n"
+            ),
+        ),
+    ]
+
+    assert_session(monkeypatch, capsys, steps)
+
+
+def test_invalid_inputs(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
     """Verify missing, malformed, and out-of-range input.
 
     Includes invalid dates and out-of-range times.
     """
     unknown_command = (
         "Never heard of it. Try: todo, deadline, event, recurring, "
-        "list, due, find, mark, unmark, note, delete, bye.\n"
+        "list, due, find, filter, mark, unmark, note, delete, bye.\n"
     )
     invalid_deadline = (
         "Invalid deadline. Use a valid date as YYYY-MM-DD, "
@@ -203,6 +246,8 @@ def test_invalid_inputs(monkeypatch: pytest.MonkeyPatch,
         ("find", "Use: find <text>\n"),
         # missing input
         ("find   ", "Use: find <text>\n"),
+        # missing input
+        ("filter", "Use: filter <type>\n"),
         # malformed input
         ("list extra", unknown_command),
         # malformed input
@@ -215,6 +260,8 @@ def test_invalid_inputs(monkeypatch: pytest.MonkeyPatch,
         ("delete abc", "Use: delete <number>\n"),
         # malformed input
         ("due 2026-3-01", "Use: due YYYY-MM-DD [HHMM]\n"),
+        # invalid task type
+        ("filter chores", "Use: filter <type>\n"),
         # invalid dates
         ("deadline submit report /by 2026-02-30", invalid_deadline),
         # invalid dates
@@ -246,8 +293,9 @@ def test_invalid_inputs(monkeypatch: pytest.MonkeyPatch,
     assert path.read_text(encoding="utf-8") == original
 
 
-def test_saving_and_loading(monkeypatch: pytest.MonkeyPatch,
-                            capsys: pytest.CaptureFixture[str]) -> None:
+def test_saving_and_loading(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
     """Verify saving and loading, including a missing data folder."""
     # missing data folder
     run_session(monkeypatch, capsys, "bye")
@@ -297,8 +345,9 @@ def test_saving_and_loading(monkeypatch: pytest.MonkeyPatch,
     assert path.read_text(encoding="utf-8") == saved
 
 
-def test_deadline_parsing_and_due(monkeypatch: pytest.MonkeyPatch,
-                                 capsys: pytest.CaptureFixture[str]) -> None:
+def test_deadline_parsing_and_due(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
     """Verify deadline parsing and `due`."""
     updated_list = (
         "1. [T][ ]read paper\n"
@@ -338,8 +387,9 @@ def test_deadline_parsing_and_due(monkeypatch: pytest.MonkeyPatch,
     assert_session(monkeypatch, capsys, steps)
 
 
-def test_find(monkeypatch: pytest.MonkeyPatch,
-              capsys: pytest.CaptureFixture[str]) -> None:
+def test_find(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
     """Verify case-insensitive partial matching with `find`."""
     matches = "1. [T][ ]read paper\n2. [D][X]submit Paper (by: Mar 01 2026, 6pm)\n"
     updated_list = (

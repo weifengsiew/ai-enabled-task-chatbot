@@ -121,7 +121,8 @@ class Tasks:
             A new list of matching task references in their original order.
         """
         return [
-            task for task in self._items
+            task
+            for task in self._items
             if query.casefold() in task["description"].casefold()
         ]
 
@@ -201,9 +202,7 @@ class Tasks:
         self._items.append(task)
         return task
 
-    def add_deadline(
-        self, description: str, when: datetime
-    ) -> dict[str, Any]:
+    def add_deadline(self, description: str, when: datetime) -> dict[str, Any]:
         """Construct a deadline task and append it to the collection in place.
 
         Args:
@@ -217,9 +216,7 @@ class Tasks:
         self._items.append(task)
         return task
 
-    def add_event(
-        self, description: str, start: str, end: str
-    ) -> dict[str, Any]:
+    def add_event(self, description: str, start: str, end: str) -> dict[str, Any]:
         """Construct an event task and append its dictionary to the list in place.
 
         Args:
@@ -234,9 +231,7 @@ class Tasks:
         self._items.append(task)
         return task
 
-    def add_recurring(
-        self, description: str, every: str
-    ) -> dict[str, Any]:
+    def add_recurring(self, description: str, every: str) -> dict[str, Any]:
         """Construct a recurring task and append its dictionary to the list in place.
 
         Args:

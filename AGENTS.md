@@ -5,6 +5,20 @@
 - **Incremental changes:** always follow [docs/guides/implement-test-iterate.md](docs/guides/implement-test-iterate.md) for making changes.
 - **Focused changes:** solve the agreed problem without unrelated refactoring or new dependencies.
 
+## Definition of done
+
+Before reporting a feature as complete:
+
+1. Run the same commands configured in `.gitlab-ci.yml`.
+2. Confirm every command passes.
+3. If a check fails because of pre-existing code, do not claim CI readiness. Either fix it or update
+   the CI scope and documentation deliberately.
+4. Report the exact commands and results.
+
+The maintained application is under `src/` and its tests are under `tests/`. The `inherited/`
+application is a separate legacy application and is not included in maintained-application CI
+checks unless its checks are passing.
+
 
 ## Coding practices
 

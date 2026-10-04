@@ -12,7 +12,13 @@ class Task:
     # Identity: identifies the kind of task.
     task_type = ""
 
-    def __init__(self, description: str, task_type: str | None = None, done: bool = False, note: str | None = None) -> None:
+    def __init__(
+        self,
+        description: str,
+        task_type: str | None = None,
+        done: bool = False,
+        note: str | None = None,
+    ) -> None:
         """
         Initialize a task with its shared fields.
 
@@ -150,7 +156,13 @@ class DeadlineTask(Task):
     # Identity
     task_type = "deadline"
 
-    def __init__(self, description: str, due_datetime: datetime | None = None, done: bool = False, note: str | None = None) -> None:
+    def __init__(
+        self,
+        description: str,
+        due_datetime: datetime | None = None,
+        done: bool = False,
+        note: str | None = None,
+    ) -> None:
         """Initialize a deadline task with its applicable fields."""
         # State
         super().__init__(description, done=done, note=note)
@@ -171,7 +183,14 @@ class EventTask(Task):
     # Identity
     task_type = "event"
 
-    def __init__(self, description: str, start_datetime: datetime | None = None, end_datetime: datetime | None = None, done: bool = False, note: str | None = None) -> None:
+    def __init__(
+        self,
+        description: str,
+        start_datetime: datetime | None = None,
+        end_datetime: datetime | None = None,
+        done: bool = False,
+        note: str | None = None,
+    ) -> None:
         """Initialize an event task with its applicable fields."""
         # State
         super().__init__(description, done=done, note=note)
@@ -196,7 +215,13 @@ class RecurringTask(Task):
     # Identity
     task_type = "recurring"
 
-    def __init__(self, description: str, recurrence_rule: str | None = None, done: bool = False, note: str | None = None) -> None:
+    def __init__(
+        self,
+        description: str,
+        recurrence_rule: str | None = None,
+        done: bool = False,
+        note: str | None = None,
+    ) -> None:
         """Initialize a recurring task with its applicable fields."""
         # State
         super().__init__(description, done=done, note=note)

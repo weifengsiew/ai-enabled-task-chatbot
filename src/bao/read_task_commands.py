@@ -13,8 +13,10 @@ from .tasks import Tasks
 
 UNMATCHED_COMMAND_MESSAGE = (
     "Never heard of it. Try: todo, deadline, event, recurring, list, due, find, "
-    "mark, unmark, note, delete, bye."
+    "filter, mark, unmark, note, delete, bye."
 )
+
+TASK_TYPES = ("todo", "deadline", "event", "recurring")
 
 
 def _number_tasks_for_display(tasks: Iterable[object]) -> list[str]:
@@ -313,6 +315,61 @@ class CommandFind(Command):
         return numbered_tasks_message
 
 
+class CommandFilter(Command):
+    """Find tasks of one type."""
+
+    def __init__(self, task_type: str) -> None:
+        self.command_keyword = "filter"
+        self.command_usage = "filter <type>"
+        self.command_pattern = re.compile(r"^filter\s+(.+)$")
+        self.unmatched_command_pattern_message = f"Use: {self.command_usage}"
+        self.no_matching_tasks_message = f'No tasks found of type "{task_type}".'
+        self.task_type = task_type
+
+    @classmethod
+    def match_user_response_with_command_keyword(cls, user_response: str) -> bool:
+        """Return whether user response matches command keyword."""
+
+        command = cls(TASK_TYPES[0])
+        matched_keyword = (
+            command.command_keyword == user_response
+            or user_response.startswith(f"{command.command_keyword} ")
+        )
+        return matched_keyword
+
+    @classmethod
+    def parse_user_response_with_command_pattern(
+        cls, user_response: str
+    ) -> CommandFilter | str | None:
+        """Return command if user response matches command pattern, else None."""
+
+        matched_keyword = cls.match_user_response_with_command_keyword(user_response)
+        if not matched_keyword:
+            return None
+
+        command = cls(TASK_TYPES[0])
+        matched_command_pattern = command.command_pattern.fullmatch(user_response)
+        if matched_command_pattern is None:
+            return command.unmatched_command_pattern_message
+
+        task_type = matched_command_pattern.group(1)
+        if task_type not in TASK_TYPES:
+            return command.unmatched_command_pattern_message
+
+        return cls(task_type)
+
+    def execute_command(self, tasks: Tasks) -> str:
+        """Execute the command."""
+
+        matches = [task for task in tasks if task.task_type == self.task_type]
+        if not matches:
+            return self.no_matching_tasks_message
+
+        numbered_tasks = _number_tasks_for_display(matches)
+        numbered_tasks_message = "\n".join(numbered_tasks)
+        return numbered_tasks_message
+
+
 from .add_task_commands import (
     CommandDeadline,
     CommandEvent,
@@ -335,6 +392,7 @@ COMMAND_CLASSES: tuple[type[Command], ...] = (
     CommandRecurring,
     CommandDue,
     CommandFind,
+    CommandFilter,
     CommandMark,
     CommandUnmark,
     CommandNote,

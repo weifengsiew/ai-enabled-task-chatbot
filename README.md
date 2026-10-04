@@ -59,10 +59,26 @@ uv run pytest
 Run the `src/bao` quality checks:
 
 ```bash
-uv run ruff check .
-uv run mypy .
+uv run ruff format --check .
+uv run ruff check src tests
+uv run mypy src tests
 uv run pytest
 ```
+
+## CI checks
+
+Before committing a feature, run the same checks as GitLab CI:
+
+```bash
+uv sync --frozen
+uv run ruff format --check .
+uv run ruff check src tests
+uv run mypy src tests
+uv run pytest
+```
+
+A feature is ready only when all commands pass. The `inherited/` application is maintained
+separately and is not part of the main application CI checks.
 
 ## Commands supported by `bao`
 
@@ -75,6 +91,7 @@ uv run pytest
 | `list` | List all saved tasks. |
 | `due YYYY-MM-DD [HHMM]` | Find deadlines due on a date or at a time. |
 | `find <text>` | Search task descriptions. |
+| `filter <type>` | List tasks of one type: `todo`, `deadline`, `event`, or `recurring`. |
 | `mark <number>` | Mark a task as done. |
 | `unmark <number>` | Mark a task as incomplete. |
 | `note <number> <note>` | Replace a task's note. |
@@ -107,6 +124,8 @@ Noted:
 Note: include the monthly figures
 > find report
 1. [D][ ]submit report (by: Oct 10 2026, 5pm)
+> filter todo
+1. [T][ ]buy groceries
 > bye
 Later.
 ```
@@ -121,7 +140,7 @@ src/bao/
 │   └── Starts the application, reads user input, and runs the command loop.
 ├── read_task_commands.py
 │   └── Defines the command base class, command dispatcher, and read/control commands:
-│       bye, list, due, and find.
+│       bye, list, due, find, and filter.
 ├── add_task_commands.py
 │   └── Defines commands that create tasks:
 │       todo, deadline, event, and recurring.
@@ -144,52 +163,52 @@ Adding a command is intentionally simple, taking just 7 steps:
 
 ### 1. Add a new command class
 
-Create a subclass of `Command` in the appropriate module. For a command that creates a task, use
+Create a subclass of `Command` in the appropriate module. For a command that reads tasks, use
+`src/bao/read_task_commands.py`. For a command that creates a task, use
 `src/bao/add_task_commands.py`. For a command that changes an existing task, use
 `src/bao/modify_task_commands.py`.
 
-For example:
+For example, add `CommandFilter` to `src/bao/read_task_commands.py`:
 
 ```python
-class CommandToDo(Command):
+class CommandFilter(Command):
 ```
 
 ### 2. Add the command data in `__init__`
 
-Store the command's keyword, usage text, regular-expression pattern, error message, and any values
-the command will need later. `CommandToDo` receives the task description and keeps it in
-`self.task_description`:
+Store the command's keyword, usage text, regular-expression pattern, error message, and task type
+in `self.task_type`:
 
 ```python
-def __init__(self, task_description: str) -> None:
-    self.command_keyword = "todo"
-    self.command_usage = "todo <description>"
-    self.command_pattern = re.compile(r"^todo\s+(.+)$")
-    self.unmatched_command_pattern_message = "Use: todo <description>"
-    self.success_message_prefix = "Added:"
-    self.task_description = task_description
+def __init__(self, task_type: str) -> None:
+    self.command_keyword = "filter"
+    self.command_usage = "filter <type>"
+    self.command_pattern = re.compile(r"^filter\s+(.+)$")
+    self.unmatched_command_pattern_message = "Use: filter <type>"
+    self.no_matching_tasks_message = f'No tasks found of type "{task_type}".'
+    self.task_type = task_type
 ```
 
 ### 3. Add `match_user_response_with_command_keyword`
 
-This method does the quick routing check. It returns `True` for `todo` and `todo buy groceries`,
+This method does the quick routing check. It returns `True` for `filter` and `filter todo`,
 so the dispatcher knows this command may be responsible for the input:
 
 ```python
 @classmethod
 def match_user_response_with_command_keyword(cls, user_response: str) -> bool:
-    command = cls("")
-    return (
-        user_response == command.command_keyword
-        or user_response.startswith(f"{command.command_keyword} ")
+    command = cls("todo")
+    return user_response == command.command_keyword or user_response.startswith(
+        f"{command.command_keyword} "
     )
 ```
 
 ### 4. Add `parse_user_response_with_command_pattern`
 
-This method validates the complete input. Use `fullmatch` so the whole response follows the
-command's syntax. Return `None` when the keyword does not match, a usage message when the syntax
-is invalid, or a fully initialized command when parsing succeeds:
+This method validates the complete input and accepts only the supported task types. Use `fullmatch`
+so the whole response follows the command's syntax. Return `None` when the keyword does not match,
+a usage message when the syntax or type is invalid, or a fully initialized command when parsing
+succeeds:
 
 ```python
 @classmethod
@@ -199,38 +218,44 @@ def parse_user_response_with_command_pattern(
     if not cls.match_user_response_with_command_keyword(user_response):
         return None
 
-    command = cls("")
+    command = cls("todo")
     matched = command.command_pattern.fullmatch(user_response)
-    if matched is None:
+    if matched is None or matched.group(1) not in TASK_TYPES:
         return command.unmatched_command_pattern_message
 
     return cls(matched.group(1))
 ```
 
-For `todo buy groceries`, `matched.group(1)` is `buy groceries`, so the returned command stores
-that value in `self.task_description`.
+For `filter todo`, `matched.group(1)` is `todo`, so the returned command stores that value in
+`self.task_type`.
 
 ### 5. Add `execute_command`
 
-This method performs the command's action. `CommandToDo` creates a `TodoTask`, adds it to the task
-collection, saves the collection, and returns the message displayed to the user:
+This method selects tasks whose `task_type` matches the requested type, numbers them for display,
+and returns a no-match message when appropriate. A read-only command does not call `tasks.save()`:
 
 ```python
 def execute_command(self, tasks: Tasks) -> str:
-    task = TodoTask(self.task_description)
-    tasks.append(task)
-    tasks.save()
-    return f"{self.success_message_prefix}\n{task}"
+    matches = [task for task in tasks if task.task_type == self.task_type]
+    if not matches:
+        return self.no_matching_tasks_message
+
+    numbered_tasks = _number_tasks_for_display(matches)
+    return "\n".join(numbered_tasks)
 ```
 
-### 6. Register new command class in `COMMAND_CLASSES`:
+### 6. Register new command class in `COMMAND_CLASSES`
 
-Finally, register the new command class in the `COMMAND_CLASSES` tuple in `src/bao/read_task_commands.py`, alongside the existing command classes. The dispatcher loops through `COMMAND_CLASSES`, calls the keyword matcher, then calls the parser. Only the parsed command's `execute_command` method changes the task collection.
+Finally, register `CommandFilter` in the `COMMAND_CLASSES` tuple in
+`src/bao/read_task_commands.py`, alongside the existing command classes. The dispatcher loops
+through `COMMAND_CLASSES`, calls the keyword matcher, then calls the parser. Only the parsed
+command's `execute_command` method reads the task collection; it does not change it.
 
 ### 7. Run tests and quality checks
 
-Add the new command's parsing and execution tests to `tests/test_bao.py`. Keep
-`inherited/tests/` for tests of the separate inherited application.
+Add tests for each supported task type, a valid type with no matching tasks, and invalid filter
+input to `tests/test_bao.py`. Keep `inherited/tests/` for tests of the separate inherited
+application.
 
 Then run the tests and quality checks:
 
