@@ -55,6 +55,7 @@ This project explores how LLM-powered conversational interfaces can make everyda
   <img alt="pytest" src="https://img.shields.io/badge/pytest-Testing-0A9EDC?style=for-the-badge&logo=pytest&logoColor=white">
   <img alt="Ruff" src="https://img.shields.io/badge/Ruff-Linting%20and%20Formatting-D7FF64?style=for-the-badge">
   <img alt="mypy" src="https://img.shields.io/badge/mypy-Type%20Checking-1674B8?style=for-the-badge">
+  <img alt="GitHub Actions" src="https://img.shields.io/badge/GitHub%20Actions-CI-2088FF?style=for-the-badge&logo=githubactions&logoColor=white">
 </p>
 
 | Area | Python framework or tool |
@@ -68,6 +69,7 @@ This project explores how LLM-powered conversational interfaces can make everyda
 | Automated testing | pytest |
 | Linting and formatting | Ruff |
 | Type checking | mypy |
+| Continuous integration | GitHub Actions |
 
 ## Best Practices Highlights
 
