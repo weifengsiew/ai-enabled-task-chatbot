@@ -54,6 +54,3 @@ def main() -> None:
     greeting()
     chat()
     farewell()
-
-def intentionally_broken:
-    invalid_pushes
