@@ -45,6 +45,30 @@ This project explores how LLM-powered conversational interfaces can make everyda
 - Manage tasks conversationally through a Command Line Interface (CLI) or Streamlit App Interface.
 - Create, search, update, filter, and view tasks using easy-to-use buttons.
 
+## Python Frameworks
+
+<p align="center">
+  <img alt="Python 3.13" src="https://img.shields.io/badge/Python-3.13-3776AB?style=for-the-badge&logo=python&logoColor=white">
+  <img alt="Streamlit" src="https://img.shields.io/badge/Streamlit-Application%20Interface-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white">
+  <img alt="OpenAI" src="https://img.shields.io/badge/OpenAI-LLM%20Integration-412991?style=for-the-badge&logo=openai&logoColor=white">
+  <img alt="uv" src="https://img.shields.io/badge/uv-Dependency%20Management-DE5FE9?style=for-the-badge">
+  <img alt="pytest" src="https://img.shields.io/badge/pytest-Testing-0A9EDC?style=for-the-badge&logo=pytest&logoColor=white">
+  <img alt="Ruff" src="https://img.shields.io/badge/Ruff-Linting%20and%20Formatting-D7FF64?style=for-the-badge">
+  <img alt="mypy" src="https://img.shields.io/badge/mypy-Type%20Checking-1674B8?style=for-the-badge">
+</p>
+
+| Area | Python framework or tool |
+| --- | --- |
+| Application runtime | Python 3.13 |
+| Command-line interface | Python standard library |
+| Web application interface | Streamlit |
+| LLM integration | OpenAI Python SDK, using an OpenAI-compatible endpoint |
+| Dependency and environment management | uv |
+| Build backend | uv_build |
+| Automated testing | pytest |
+| Linting and formatting | Ruff |
+| Type checking | mypy |
+
 ## Best Practices Highlights
 
 - Object-oriented programming: Shared `Task` and `Command` base classes with subclasses for specific task and command types.
