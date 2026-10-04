@@ -53,6 +53,8 @@ uv run streamlit run src/bao/streamlit_app.py \
 
 Then open [http://127.0.0.1:7860](http://127.0.0.1:7860) in your browser.
 
+To enable AI assistance, configure the OpenAI-compatible LLM endpoint, model, and API key, then enable **Ask Bao AI** in Streamlit. See the [LLM setup instructions](STREAMLIT_USER_GUIDE.md#configure-the-api-key-and-start-bao-with-llm-assistance).
+
 ## Commands supported by `bao`
 
 | Command | Purpose |
