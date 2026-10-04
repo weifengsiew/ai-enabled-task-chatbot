@@ -4,6 +4,10 @@
 
 `bao` is a command-line task tracker chatbot application implemented in `src/bao/`.
 
+## Video demo
+
+[Watch the AI Enabled Task Chatbot demo](./AI%20Enabled%20Task%20Chatbot.MOV)
+
 ## User guide
 
 - [Streamlit User Guide](STREAMLIT_USER_GUIDE.md)
