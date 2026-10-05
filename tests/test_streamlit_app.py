@@ -9,6 +9,9 @@ import pytest
 
 from bao import llm
 from bao.streamlit_app import (
+    CAT_ASSET_DIRECTORY,
+    CAT_ASSETS,
+    CAT_THEME_CSS,
     _authenticate,
     _recurrence_rule,
     _run_command,
@@ -50,6 +53,28 @@ def test_invalid_usernames_are_rejected(username: str) -> None:
 def test_valid_username_is_accepted() -> None:
     """Signup accepts documented usernames."""
     assert _valid_username("bao-user_1") is True
+
+
+def test_cat_theme_defines_shared_light_and_dark_palette() -> None:
+    """The Streamlit theme includes the approved palette and dark-mode support."""
+    assert "--bao-ginger: #d97745" in CAT_THEME_CSS
+    assert "--bao-sage: #7b9a82" in CAT_THEME_CSS
+    assert "prefers-color-scheme: dark" in CAT_THEME_CSS
+
+
+def test_cat_theme_has_an_illustration_for_each_workflow_and_task_type() -> None:
+    """Every themed workflow maps to a local cat illustration asset."""
+    assert set(CAT_ASSETS) == {
+        "chat",
+        "create",
+        "search",
+        "deadline",
+        "recurring",
+        "todo",
+        "event",
+        "close",
+    }
+    assert all((CAT_ASSET_DIRECTORY / asset).exists() for asset in CAT_ASSETS.values())
 
 
 def test_streamlit_command_execution_is_user_scoped() -> None:

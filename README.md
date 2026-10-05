@@ -13,6 +13,8 @@ Watch the AI-Enabled Task Chatbot demo on YouTube:
 ## User Guide
 
 - [Streamlit User Guide](STREAMLIT_USER_GUIDE.md)
+- [Cat theme specification](docs/specifications/cat-theme-spec.md)
+- [Developer documentation](docs/)
 
 ## Setup and run `bao`
 

@@ -7,6 +7,7 @@ import re
 import signal
 import threading
 from datetime import UTC, date, datetime, time
+from pathlib import Path
 from typing import Any, cast
 
 import streamlit as st
@@ -25,6 +26,17 @@ from bao.tasks import Tasks
 from bao.users import authenticate_account, create_account, load_accounts
 
 USERS_ENVIRONMENT_VARIABLE = "BAO_USERS"
+CAT_ASSET_DIRECTORY = Path(__file__).resolve().parents[2] / "assets" / "cats"
+CAT_ASSETS = {
+    "chat": "chat-cat.png",
+    "create": "create-cat.png",
+    "search": "search-cat.png",
+    "deadline": "deadline-cat.png",
+    "recurring": "recurring-cat.png",
+    "todo": "todo-cat.png",
+    "event": "event-cat.png",
+    "close": "close-cat.png",
+}
 WEEKDAYS = (
     "Monday",
     "Tuesday",
@@ -34,6 +46,53 @@ WEEKDAYS = (
     "Saturday",
     "Sunday",
 )
+CAT_THEME_CSS = """
+<style>
+:root {
+    --bao-cream: #fff8ee;
+    --bao-ivory: #fffcf7;
+    --bao-charcoal: #292522;
+    --bao-ginger: #d97745;
+    --bao-sage: #7b9a82;
+    --bao-rose: #c96b68;
+    --bao-lavender: #a99bc7;
+}
+
+body,
+[data-testid="stAppViewContainer"] {
+    background: var(--bao-cream);
+    color: var(--bao-charcoal);
+}
+
+[data-testid="stSidebar"] {
+    background: var(--bao-ivory);
+    border-right: 1px solid color-mix(in srgb, var(--bao-ginger) 22%, transparent);
+}
+
+[data-testid="stChatMessage"] {
+    border-radius: 0.8rem;
+    border: 1px solid color-mix(in srgb, var(--bao-ginger) 18%, transparent);
+}
+
+button[kind="primary"] {
+    background: var(--bao-ginger);
+    border-color: var(--bao-ginger);
+}
+
+button[kind="primary"]:hover {
+    background: #bd5e31;
+    border-color: #bd5e31;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bao-cream: #211d1a;
+        --bao-ivory: #2b2622;
+        --bao-charcoal: #fff8ee;
+    }
+}
+</style>
+"""
 
 
 def _configured_users() -> dict[str, str]:
@@ -77,6 +136,23 @@ def _append_exchange(command_text: str, response: str) -> None:
     st.session_state.messages.extend([("user", command_text), ("assistant", response)])
 
 
+def _apply_cat_theme() -> None:
+    """Apply Bao's shared visual theme to the Streamlit application."""
+    st.markdown(CAT_THEME_CSS, unsafe_allow_html=True)
+
+
+def _render_cat_header(asset_key: str, title: str, caption: str) -> None:
+    """Render a cat illustration beside a workflow heading."""
+    image_column, text_column = st.columns([1, 3], vertical_alignment="center")
+    with image_column:
+        asset_path = CAT_ASSET_DIRECTORY / CAT_ASSETS[asset_key]
+        if asset_path.exists():
+            st.image(str(asset_path), width=180)
+    with text_column:
+        st.header(title)
+        st.caption(caption)
+
+
 def _save_llm_enabled_state() -> None:
     st.session_state.llm_enabled = st.session_state.llm_enabled_checkbox
 
@@ -96,7 +172,7 @@ def _init_state() -> None:
 
 
 def _render_login() -> None:
-    st.title("Bao")
+    st.title("Bao 🐾")
     st.subheader("Sign in")
     with st.form("login_form"):
         username = st.text_input("Username", autocomplete="username")
@@ -116,7 +192,7 @@ def _render_login() -> None:
 
 
 def _render_signup() -> None:
-    st.title("Bao")
+    st.title("Bao 🐾")
     st.subheader("Sign up")
     with st.form("signup_form"):
         username = st.text_input("Username", autocomplete="username")
@@ -146,13 +222,13 @@ def _render_signup() -> None:
 
 
 def _render_navigation() -> None:
-    st.sidebar.title("Bao")
+    st.sidebar.title("Bao 🐾")
     st.sidebar.caption(f"Signed in as {st.session_state.username}")
     if st.sidebar.button("🐱💬 Chat about task", use_container_width=True):
         st.session_state.workflow = "chat"
-    if st.sidebar.button("✎ Create task", use_container_width=True):
+    if st.sidebar.button("🐾 Create task", use_container_width=True):
         st.session_state.workflow = "create"
-    if st.sidebar.button("👁️ View task", use_container_width=True):
+    if st.sidebar.button("👀 View task", use_container_width=True):
         st.session_state.workflow = "view"
     if st.sidebar.button("🔍 Search and update task", use_container_width=True):
         st.session_state.workflow = "search"
@@ -179,7 +255,13 @@ def _render_conversation() -> None:
 
 
 def _render_chat() -> None:
-    st.header("Chat about task")
+    _render_cat_header(
+        "chat",
+        "Chat about task",
+        "Your friendly Bao cat is ready to talk through your task nook.",
+    )
+    if not st.session_state.messages:
+        st.info("What should we pounce on first?")
     _render_conversation()
     with st.form("command_form", clear_on_submit=True):
         command = st.text_input("Command or question")
@@ -273,7 +355,11 @@ def _render_datetime_fields(prefix: str, include_end: bool = False) -> tuple[str
 
 
 def _render_create() -> None:
-    st.header("Create task")
+    _render_cat_header(
+        "create",
+        "Create task",
+        "Paint a new task into your day.",
+    )
     # Keep this selector outside the form so changing it reruns Streamlit and
     # immediately redraws only the fields for the selected task type.
     task_type = st.selectbox("Which task type?", TASK_TYPES, key="create_type")
@@ -351,8 +437,17 @@ def _search_tasks(query: str, attribute: str) -> list[Task]:
 
 
 def _render_view() -> None:
-    st.header("View task")
     task_type = st.selectbox("Task type", TASK_TYPES)
+    _render_cat_header(
+        task_type,
+        f"{task_type.title()} tasks",
+        {
+            "deadline": "Keep an eye on the clock.",
+            "recurring": "Play with the rhythm of repeating tasks.",
+            "todo": "A little homework at a time.",
+            "event": "Dress up your plans for the occasion.",
+        }[task_type],
+    )
     tasks = [
         task for task in Tasks(st.session_state.username) if task.task_type == task_type
     ]
@@ -360,7 +455,7 @@ def _render_view() -> None:
         for task in tasks:
             st.write(f"**#{task.task_id}** — {task}")
     else:
-        st.info("There are no matching tasks yet.")
+        st.info("No tasks yet — your task nook is pleasantly quiet.")
 
 
 def _parse_form_datetime(value: str) -> datetime | None:
@@ -535,13 +630,17 @@ def _render_update(task: Task) -> None:
             if result.task_id != task.task_id
         ]
         st.session_state.clear_search_selection = True
-        st.session_state.messages.append(("assistant", "Task deleted."))
+        st.session_state.messages.append(("assistant", "Done — neatly tucked away."))
         st.session_state.selected_task_id = None
         st.rerun()
 
 
 def _render_search() -> None:
-    st.header("Search and update task")
+    _render_cat_header(
+        "search",
+        "Search and update task",
+        "Your detective cat will sniff out the right task.",
+    )
     if st.session_state.pop("clear_search_selection", False):
         st.session_state.pop("search_result_selector", None)
     with st.form("search_tasks_form"):
@@ -570,10 +669,10 @@ def _render_search() -> None:
 
     results = st.session_state.search_results
     if not submitted and not results:
-        st.info("Enter a search term and press the search icon.")
+        st.info("Search your task nook with the search icon.")
         return
     if not results:
-        st.info("No matching tasks.")
+        st.info("No matching tasks — this nook is quiet for now.")
         return
     labels = [f"#{task.task_id} — {task}" for task in results]
     selected_label = st.radio("Search results", labels, key="search_result_selector")
@@ -585,7 +684,11 @@ def _render_search() -> None:
 
 def _render_workspace() -> None:
     if st.session_state.get("closed", False):
-        st.title("Bao has been closed")
+        _render_cat_header(
+            "close",
+            "Bao has been closed",
+            "Bao is heading out for now — see you next time.",
+        )
         st.write("Restart Bao from the terminal to use it again.")
         threading.Timer(0.5, lambda: os.kill(os.getpid(), signal.SIGTERM)).start()
         return
@@ -606,6 +709,7 @@ def _render_workspace() -> None:
 def main() -> None:
     """Run the Streamlit Bao application."""
     st.set_page_config(page_title="Bao", page_icon="🐱", layout="wide")
+    _apply_cat_theme()
     _init_state()
     if st.session_state.username is None:
         if st.session_state.auth_page == "signup":

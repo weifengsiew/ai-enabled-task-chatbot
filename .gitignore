@@ -28,6 +28,4 @@ htmlcov/
 .idea/
 
 # Local project guidance and legacy CI configuration
-AGENTS.md
-docs/
 .gitlab-ci.yml
