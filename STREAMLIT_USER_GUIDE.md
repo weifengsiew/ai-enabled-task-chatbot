@@ -17,6 +17,21 @@ replace the port with `7861` in the command and URL.
 
 Bao is intended for local use. Do not expose it publicly.
 
+## Cat-themed workspace
+
+Bao uses friendly cat illustrations to make each workflow easier to recognize.
+The illustrations are decorative and always paired with clear text labels.
+
+| Workflow | Bao’s visual cue |
+| --- | --- |
+| Chat about task | <img src="assets/cats/chat-cat.png" alt="Chat cat with speech bubble" width="120"> |
+| Create task | <img src="assets/cats/create-cat.png" alt="Cat painting a task" width="120"> |
+| Search and update task | <img src="assets/cats/search-cat.png" alt="Detective cat with magnifying glass" width="120"> |
+| View todo tasks | <img src="assets/cats/todo-cat.png" alt="Cat doing homework" width="120"> |
+| View deadline tasks | <img src="assets/cats/deadline-cat.png" alt="Cat with a clock" width="120"> |
+| View recurring tasks | <img src="assets/cats/recurring-cat.png" alt="Cat playing with a yarn ball" width="120"> |
+| View event tasks | <img src="assets/cats/event-cat.png" alt="Cat in a suit and tie" width="120"> |
+
 ## Sign in or sign up
 
 On the sign-in page:

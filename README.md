@@ -16,6 +16,19 @@ Watch the AI-Enabled Task Chatbot demo on YouTube:
 - [Cat theme specification](docs/specifications/cat-theme-spec.md)
 - [Developer documentation](docs/)
 
+## Cat-themed Streamlit UI
+
+Bao’s Streamlit workspace uses a local cat illustration for each major
+workflow and task type, making the visual language easy to recognize.
+
+| Chat | Create task | Search and update |
+| --- | --- | --- |
+| ![Bao chat cat](assets/cats/chat-cat.png) | ![Bao painting cat](assets/cats/create-cat.png) | ![Bao detective cat](assets/cats/search-cat.png) |
+
+| Todo | Deadline | Recurring | Event |
+| --- | --- | --- | --- |
+| ![Bao homework cat](assets/cats/todo-cat.png) | ![Bao clock cat](assets/cats/deadline-cat.png) | ![Bao yarn-ball cat](assets/cats/recurring-cat.png) | ![Bao event cat](assets/cats/event-cat.png) |
+
 ## Setup and run `bao`
 
 Requires Python 3.13 and uv. From the repository root, install dependencies and start the CLI:
