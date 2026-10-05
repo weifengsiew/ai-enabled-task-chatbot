@@ -8,7 +8,7 @@ by an LLM, so users can manage tasks without navigating complex command syntax.
 
 Watch the AI-Enabled Task Chatbot demo on YouTube:
 
-[![Watch the AI-Enabled Task Chatbot demo](https://img.youtube.com/vi/Vv8rg3zCtYU/maxresdefault.jpg)](https://youtu.be/Vv8rg3zCtYU)
+[![Watch the AI-Enabled Task Chatbot demo](https://img.youtube.com/vi/Vv8rg3zCtYU/maxresdefault.jpg)](https://youtu.be/Bg8MmsV6iBM?is=1H__O-CL5IOFH3Sn)
 
 ## User Guide
 
