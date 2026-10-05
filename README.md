@@ -8,7 +8,7 @@ by an LLM, so users can manage tasks without navigating complex command syntax.
 
 Watch the AI-Enabled Task Chatbot demo on YouTube:
 
-[![Watch the AI-Enabled Task Chatbot demo](https://img.youtube.com/vi/Vv8rg3zCtYU/maxresdefault.jpg)](https://youtu.be/Bg8MmsV6iBM?is=1H__O-CL5IOFH3Sn)
+[![Watch the AI-Enabled Task Chatbot demo](https://img.youtube.com/vi/Bg8MmsV6iBM/hqdefault.jpg)](https://youtu.be/Bg8MmsV6iBM?is=1H__O-CL5IOFH3Sn)
 
 ## User Guide
 
@@ -171,7 +171,7 @@ src/bao/
 │   └── Defines commands that create tasks:
 │       todo, deadline, event, and recurring.
 ├── modify_task_commands.py
-│   └── Defines commands that modify tasks:
+│   └── Defines commands that modify existing tasks:
 │       mark, unmark, note, and delete.
 ├── parser.py
 │   └── Provides shared parsing helpers for dates, times, and task numbers.
