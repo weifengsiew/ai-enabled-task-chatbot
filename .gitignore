@@ -27,5 +27,9 @@ htmlcov/
 .vscode/
 .idea/
 
+# Local documentation and agent instructions
+docs/
+agents.md
+
 # Local project guidance and legacy CI configuration
 .gitlab-ci.yml
