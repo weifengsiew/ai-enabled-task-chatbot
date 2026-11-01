@@ -4,30 +4,27 @@ An AI-enabled conversational task manager for capturing, organizing, and retriev
 deadlines, events, and recurring tasks. It combines explicit task commands with a natural-language interface powered 
 by an LLM, so users can manage tasks without navigating complex command syntax.
 
-## Video Demo
+## What Bao can do
 
-Watch the AI-Enabled Task Chatbot demo on YouTube:
+Bao provides a conversational interface for creating, finding, and managing everyday tasks through the Streamlit app.
+
+| Chat with Bao | Create tasks | Find and update tasks |
+| --- | --- | --- |
+| ![Chat with Bao](assets/cats/chat-cat.png) | ![Create a task](assets/cats/create-cat.png) | ![Find and update tasks](assets/cats/search-cat.png) |
+
+Bao supports four task types:
+
+| Todo | Deadline | Recurring task | Event |
+| --- | --- | --- | --- |
+| ![Create a todo](assets/cats/todo-cat.png) | ![Create a deadline](assets/cats/deadline-cat.png) | ![Create a recurring task](assets/cats/recurring-cat.png) | ![Create an event](assets/cats/event-cat.png) |
+
+Watch Bao in action:
 
 [![Watch the AI-Enabled Task Chatbot demo](https://img.youtube.com/vi/Bg8MmsV6iBM/hqdefault.jpg)](https://youtu.be/Bg8MmsV6iBM?is=1H__O-CL5IOFH3Sn)
 
 ## User Guide
 
 - [Streamlit User Guide](STREAMLIT_USER_GUIDE.md)
-- [Cat theme specification](docs/specifications/cat-theme-spec.md)
-- [Developer documentation](docs/)
-
-## Cat-themed Streamlit UI
-
-Bao’s Streamlit workspace uses a local cat illustration for each major
-workflow and task type, making the visual language easy to recognize.
-
-| Chat | Create task | Search and update |
-| --- | --- | --- |
-| ![Bao chat cat](assets/cats/chat-cat.png) | ![Bao painting cat](assets/cats/create-cat.png) | ![Bao detective cat](assets/cats/search-cat.png) |
-
-| Todo | Deadline | Recurring | Event |
-| --- | --- | --- | --- |
-| ![Bao homework cat](assets/cats/todo-cat.png) | ![Bao clock cat](assets/cats/deadline-cat.png) | ![Bao yarn-ball cat](assets/cats/recurring-cat.png) | ![Bao event cat](assets/cats/event-cat.png) |
 
 ## Setup and run `bao`
 
@@ -54,11 +51,6 @@ To enable AI assistance, configure the OpenAI-compatible LLM endpoint, model, an
 ## Project Motivation
 
 This project explores how LLM-powered conversational interfaces can make everyday task management feel more natural, while Python keeps tasks structured and the codebase testable and easy to extend.
-
-## Chatbot Feature Highlights
-
-- Manage tasks conversationally through a Command Line Interface (CLI) or Streamlit App Interface.
-- Create, search, update, filter, and view tasks using easy-to-use buttons.
 
 ## Best Practices Highlights
 
