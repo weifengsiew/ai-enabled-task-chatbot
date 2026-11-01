@@ -56,9 +56,9 @@ before starting Bao:
 
 ```bash
 export BAO_LLM_API_STYLE="openai"
-export BAO_LLM_BASE_URL="https://litellm.aiap23a-<your-project-id>-aut0.aisingapore.net/v1"
+export BAO_LLM_BASE_URL="https://your-llm-endpoint.example.com/v1"
 export BAO_LLM_API_KEY="your-api-key"
-export BAO_LLM_MODEL="FW-DeepSeek-V4.1-Flash"
+export BAO_LLM_MODEL="your-model-name"
 ```
 
 ### Configure the API key and start Bao with LLM assistance
@@ -71,14 +71,13 @@ Terminal sessions:
 nano ~/.zshrc
 ```
 
-Add the following lines, replacing the API-key placeholder with your key and
-using your assigned project ID. For the `acai` project, use this exact base
-URL:
+Add the following lines, replacing the placeholders with the base URL, model
+name, and API key supplied by your LLM provider or administrator:
 
 ```bash
 export BAO_LLM_API_STYLE="openai"
-export BAO_LLM_BASE_URL="https://litellm.aiap23a-acai-aut0.aisingapore.net/v1"
-export BAO_LLM_MODEL="FW-DeepSeek-V4.1-Flash"
+export BAO_LLM_BASE_URL="https://your-llm-endpoint.example.com/v1"
+export BAO_LLM_MODEL="your-model-name"
 export BAO_LLM_API_KEY="your-api-key"
 ```
 
@@ -95,7 +94,6 @@ When you open a new Terminal window, macOS loads `~/.zshrc` automatically.
 Start Bao from the project directory:
 
 ```bash
-cd /Users/Hardisk_WeiFeng/AIAP/bao
 uv run streamlit run src/bao/streamlit_app.py --server.port 7860
 ```
 
