@@ -1,4 +1,4 @@
-"""Provide Bao's alternative local Streamlit user interface."""
+"""Provide Meow's local Streamlit application."""
 
 from __future__ import annotations
 
@@ -12,20 +12,20 @@ from typing import Any, cast
 
 import streamlit as st
 
-from bao.llm import (
+from meow.parser import _parse_datetime_parts
+from meow.read_task_commands import TASK_TYPES, Command
+from meow.task import Task
+from meow.task_assistant import (
     LLM_API_KEY_VARIABLE,
     LLM_BASE_URL_VARIABLE,
     LLM_MODEL_VARIABLE,
     ask_task_assistant,
     llm_configuration_error,
 )
-from bao.parser import _parse_datetime_parts
-from bao.read_task_commands import TASK_TYPES, Command
-from bao.task import Task
-from bao.tasks import Tasks
-from bao.users import authenticate_account, create_account, load_accounts
+from meow.tasks import Tasks
+from meow.users import authenticate_account, create_account, load_accounts
 
-USERS_ENVIRONMENT_VARIABLE = "BAO_USERS"
+USERS_ENVIRONMENT_VARIABLE = "MEOW_USERS"
 CAT_ASSET_DIRECTORY = Path(__file__).resolve().parents[2] / "assets" / "cats"
 CAT_ASSETS = {
     "chat": "chat-cat.png",
@@ -49,34 +49,34 @@ WEEKDAYS = (
 CAT_THEME_CSS = """
 <style>
 :root {
-    --bao-cream: #fff8ee;
-    --bao-ivory: #fffcf7;
-    --bao-charcoal: #292522;
-    --bao-ginger: #d97745;
-    --bao-sage: #7b9a82;
-    --bao-rose: #c96b68;
-    --bao-lavender: #a99bc7;
+    --meow-cream: #fff8ee;
+    --meow-ivory: #fffcf7;
+    --meow-charcoal: #292522;
+    --meow-ginger: #d97745;
+    --meow-sage: #7b9a82;
+    --meow-rose: #c96b68;
+    --meow-lavender: #a99bc7;
 }
 
 body,
 [data-testid="stAppViewContainer"] {
-    background: var(--bao-cream);
-    color: var(--bao-charcoal);
+    background: var(--meow-cream);
+    color: var(--meow-charcoal);
 }
 
 [data-testid="stSidebar"] {
-    background: var(--bao-ivory);
-    border-right: 1px solid color-mix(in srgb, var(--bao-ginger) 22%, transparent);
+    background: var(--meow-ivory);
+    border-right: 1px solid color-mix(in srgb, var(--meow-ginger) 22%, transparent);
 }
 
 [data-testid="stChatMessage"] {
     border-radius: 0.8rem;
-    border: 1px solid color-mix(in srgb, var(--bao-ginger) 18%, transparent);
+    border: 1px solid color-mix(in srgb, var(--meow-ginger) 18%, transparent);
 }
 
 button[kind="primary"] {
-    background: var(--bao-ginger);
-    border-color: var(--bao-ginger);
+    background: var(--meow-ginger);
+    border-color: var(--meow-ginger);
 }
 
 button[kind="primary"]:hover {
@@ -86,9 +86,9 @@ button[kind="primary"]:hover {
 
 @media (prefers-color-scheme: dark) {
     :root {
-        --bao-cream: #211d1a;
-        --bao-ivory: #2b2622;
-        --bao-charcoal: #fff8ee;
+        --meow-cream: #211d1a;
+        --meow-ivory: #2b2622;
+        --meow-charcoal: #fff8ee;
     }
 }
 </style>
@@ -137,7 +137,7 @@ def _append_exchange(command_text: str, response: str) -> None:
 
 
 def _apply_cat_theme() -> None:
-    """Apply Bao's shared visual theme to the Streamlit application."""
+    """Apply Meow's shared visual theme to the Streamlit application."""
     st.markdown(CAT_THEME_CSS, unsafe_allow_html=True)
 
 
@@ -172,7 +172,7 @@ def _init_state() -> None:
 
 
 def _render_login() -> None:
-    st.title("Bao 🐾")
+    st.title("Meow 🐾")
     st.subheader("Sign in")
     with st.form("login_form"):
         username = st.text_input("Username", autocomplete="username")
@@ -192,7 +192,7 @@ def _render_login() -> None:
 
 
 def _render_signup() -> None:
-    st.title("Bao 🐾")
+    st.title("Meow 🐾")
     st.subheader("Sign up")
     with st.form("signup_form"):
         username = st.text_input("Username", autocomplete="username")
@@ -222,7 +222,7 @@ def _render_signup() -> None:
 
 
 def _render_navigation() -> None:
-    st.sidebar.title("Bao 🐾")
+    st.sidebar.title("Meow 🐾")
     st.sidebar.caption(f"Signed in as {st.session_state.username}")
     if st.sidebar.button("🐱💬 Chat about task", use_container_width=True):
         st.session_state.workflow = "chat"
@@ -235,10 +235,10 @@ def _render_navigation() -> None:
     if st.sidebar.button("🤖 Enable LLM", use_container_width=True):
         st.session_state.workflow = "llm"
 
-    if st.sidebar.button("× Close Bao", use_container_width=True):
+    if st.sidebar.button("× Close Meow", use_container_width=True):
         st.session_state.close_requested = True
     if st.session_state.get("close_requested", False):
-        st.sidebar.warning("Close Bao and stop the local server?")
+        st.sidebar.warning("Close Meow and stop the local server?")
         confirmed = st.sidebar.checkbox("I confirm", key="close_confirmation")
         if confirmed and st.sidebar.button("Confirm close", type="primary"):
             st.session_state.closed = True
@@ -258,7 +258,7 @@ def _render_chat() -> None:
     _render_cat_header(
         "chat",
         "Chat about task",
-        "Your friendly Bao cat is ready to talk through your task nook.",
+        "Your friendly Meow cat is ready to talk through your task nook.",
     )
     if not st.session_state.messages:
         st.info("What should we pounce on first?")
@@ -267,15 +267,15 @@ def _render_chat() -> None:
         command = st.text_input("Command or question")
         submitted = st.form_submit_button("Submit", type="primary")
         ask_ai = st.form_submit_button(
-            "Ask Bao AI", disabled=not st.session_state.llm_enabled
+            "Ask Meow AI", disabled=not st.session_state.llm_enabled
         )
     if not st.session_state.llm_enabled:
-        st.caption("Enable LLM in the sidebar to use Ask Bao AI.")
+        st.caption("Enable LLM in the sidebar to use Ask Meow AI.")
     if submitted and command.strip():
         _append_exchange(command, _run_command(st.session_state.username, command))
         st.rerun()
     if ask_ai and command.strip():
-        with st.spinner("Asking Bao AI..."):
+        with st.spinner("Asking Meow AI..."):
             response = ask_task_assistant(
                 st.session_state.username,
                 command,
@@ -297,7 +297,7 @@ def _render_llm() -> None:
     if configuration_error is not None:
         st.error(configuration_error)
         st.info(
-            "Set the LLM environment variables before starting Bao. "
+            "Set the LLM environment variables before starting Meow. "
             f"The API key is read from {LLM_API_KEY_VARIABLE} and is never "
             "displayed here."
         )
@@ -309,7 +309,7 @@ def _render_llm() -> None:
     st.caption(f"Model: {os.environ[LLM_MODEL_VARIABLE]}")
     st.session_state.setdefault("llm_enabled_checkbox", st.session_state.llm_enabled)
     st.checkbox(
-        "Enable Ask Bao AI in Chat about task",
+        "Enable Ask Meow AI in Chat about task",
         key="llm_enabled_checkbox",
         on_change=_save_llm_enabled_state,
     )
@@ -686,10 +686,10 @@ def _render_workspace() -> None:
     if st.session_state.get("closed", False):
         _render_cat_header(
             "close",
-            "Bao has been closed",
-            "Bao is heading out for now — see you next time.",
+            "Meow has been closed",
+            "Meow is heading out for now — see you next time.",
         )
-        st.write("Restart Bao from the terminal to use it again.")
+        st.write("Restart Meow from the terminal to use it again.")
         threading.Timer(0.5, lambda: os.kill(os.getpid(), signal.SIGTERM)).start()
         return
     _render_navigation()
@@ -707,8 +707,8 @@ def _render_workspace() -> None:
 
 
 def main() -> None:
-    """Run the Streamlit Bao application."""
-    st.set_page_config(page_title="Bao", page_icon="🐱", layout="wide")
+    """Run the Streamlit Meow application."""
+    st.set_page_config(page_title="Meow", page_icon="🐱", layout="wide")
     _apply_cat_theme()
     _init_state()
     if st.session_state.username is None:

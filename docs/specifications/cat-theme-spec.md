@@ -1,4 +1,4 @@
-# Bao Cat Theme
+# Meow Cat Theme
 
 ## Status
 
@@ -6,7 +6,7 @@ Complete
 
 ## User story
 
-As a Bao task-manager user, I want a warm and friendly cat-themed interface,
+As a Meow task-manager user, I want a warm and friendly cat-themed interface,
 so that managing everyday tasks feels more inviting without reducing clarity,
 accessibility, or focus.
 
@@ -16,7 +16,7 @@ accessibility, or focus.
 
 - Given the user opens the login page or authenticated workspace
 - When the page renders
-- Then it uses the `Bao 🐾` brand treatment consistently in the title,
+- Then it uses the `Meow 🐾` brand treatment consistently in the title,
   sidebar, and main workspace
 
 ### Example 2: Cat-themed navigation
@@ -37,7 +37,7 @@ accessibility, or focus.
 
 - Given the user has no tasks, search results, or conversation messages
 - When the relevant workflow is opened
-- Then Bao shows a friendly cat-themed empty state without changing stored data
+- Then Meow shows a friendly cat-themed empty state without changing stored data
 
 ### Example 5: Clear task status
 
@@ -91,12 +91,12 @@ commands, errors, dates, and task status explicit.
 
 | Current context | Cat-themed direction |
 | --- | --- |
-| App title | `Bao 🐾` |
+| App title | `Meow 🐾` |
 | Signed-in caption | `Your task nook` or `Signed in as <username>` |
 | Empty task list | `No tasks yet — your task nook is pleasantly quiet.` |
 | Empty conversation | `What should we pounce on first?` |
 | Completed task | `Done — neatly tucked away.` |
-| AI assistant | `Bao's helper cat` or `Ask Bao AI` |
+| AI assistant | `Meow's helper cat` or `Ask Meow AI` |
 | Delete confirmation | `Remove this task from the nook?` |
 
 Cat wording must not appear in security messages, authentication errors,
@@ -107,7 +107,7 @@ validation errors, or dates and times. Those messages remain direct.
 MVP:
 
 - Add a shared Streamlit CSS/theme layer using the palette above.
-- Apply the `Bao 🐾` title and cat-themed navigation labels.
+- Apply the `Meow 🐾` title and cat-themed navigation labels.
 - Add cat-themed empty states and success/confirmation copy.
 - Add local illustrations for chat, create, search, deadline, recurring, todo,
   event, and close workflows.
@@ -117,7 +117,7 @@ MVP:
 
 Later enhancements:
 
-- Add alternate locally stored Bao mascot poses for completed and overdue states.
+- Add alternate locally stored Meow mascot poses for completed and overdue states.
 - Let users choose between a subtle theme and a more playful theme.
 - Add optional cat sounds or animations only if they can be disabled and do not
   affect accessibility or performance.
@@ -131,7 +131,7 @@ Later enhancements:
 - Recurring task — a cat playing with a hanging yarn ball.
 - Todo task — a cat doing homework with glasses and a pencil.
 - Event task — a cat in a suit and tie with an invitation and teacup.
-- Close Bao — a cat walking out through an open door.
+- Close Meow — a cat walking out through an open door.
 
 The illustrations are transparent local PNG assets with no embedded text. Each
 workflow keeps an explicit text heading and caption so the artwork is
@@ -149,7 +149,7 @@ decorative support rather than the only meaning conveyed to the user.
 
 List only the files where the proposed changes will be added or made.
 
-- `src/bao/streamlit_app.py` — shared theme styling, branding, navigation,
+- `src/meow/streamlit_application.py` — shared theme styling, branding, navigation,
   cat-themed empty states, and illustration mapping.
 - `assets/cats/*.png` — local transparent workflow, task-type, and close-state
   illustrations.

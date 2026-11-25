@@ -1,12 +1,12 @@
-"""Command-line entry point for Bao."""
+"""Command-line entry point for Meow."""
 
 from .read_task_commands import Command, CommandBye
 from .tasks import Tasks
 
 
 def greeting() -> None:
-    """Print Bao's greeting."""
-    print("Hello! I'm bao. What needs doing?")
+    """Print Meow's greeting."""
+    print("Hello! I'm meow. What needs doing?")
 
 
 def chat() -> None:
@@ -39,13 +39,13 @@ def chat() -> None:
 
 
 def farewell() -> None:
-    """Print Bao's closing message."""
+    """Print Meow's closing message."""
     print("Later.")
 
 
 def main() -> None:
     """
-    Run Bao's command-line interface.
+    Run Meow's command-line interface.
 
     Returns:
     --------

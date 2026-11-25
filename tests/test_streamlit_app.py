@@ -1,4 +1,4 @@
-"""Tests for Bao's Streamlit application helpers."""
+"""Tests for Meow's Streamlit application helpers."""
 
 from datetime import time
 from pathlib import Path
@@ -7,8 +7,8 @@ from typing import Any, cast
 
 import pytest
 
-from bao import llm
-from bao.streamlit_app import (
+from meow import task_assistant
+from meow.streamlit_application import (
     CAT_ASSET_DIRECTORY,
     CAT_ASSETS,
     CAT_THEME_CSS,
@@ -18,8 +18,8 @@ from bao.streamlit_app import (
     _task_matches,
     _valid_username,
 )
-from bao.tasks import Tasks
-from bao.users import account_file, create_account
+from meow.tasks import Tasks
+from meow.users import account_file, create_account
 
 
 @pytest.fixture(autouse=True)
@@ -30,7 +30,7 @@ def isolated_data_directory(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> 
 
 def test_configured_user_authentication(monkeypatch: pytest.MonkeyPatch) -> None:
     """Configured users can authenticate through the Streamlit UI."""
-    monkeypatch.setenv("BAO_USERS", "alice:secret")
+    monkeypatch.setenv("MEOW_USERS", "alice:secret")
 
     assert _authenticate("alice", "secret") is True
     assert _authenticate("alice", "wrong") is False
@@ -52,13 +52,13 @@ def test_invalid_usernames_are_rejected(username: str) -> None:
 
 def test_valid_username_is_accepted() -> None:
     """Signup accepts documented usernames."""
-    assert _valid_username("bao-user_1") is True
+    assert _valid_username("meow-user_1") is True
 
 
 def test_cat_theme_defines_shared_light_and_dark_palette() -> None:
     """The Streamlit theme includes the approved palette and dark-mode support."""
-    assert "--bao-ginger: #d97745" in CAT_THEME_CSS
-    assert "--bao-sage: #7b9a82" in CAT_THEME_CSS
+    assert "--meow-ginger: #d97745" in CAT_THEME_CSS
+    assert "--meow-sage: #7b9a82" in CAT_THEME_CSS
     assert "prefers-color-scheme: dark" in CAT_THEME_CSS
 
 
@@ -128,22 +128,22 @@ def test_streamlit_recurrence_rule_uses_selected_day_and_time() -> None:
 
 def test_llm_reports_missing_configuration(monkeypatch: pytest.MonkeyPatch) -> None:
     """AI assistance explains how to configure the endpoint."""
-    monkeypatch.delenv("BAO_LLM_BASE_URL", raising=False)
-    monkeypatch.delenv("BAO_LLM_API_KEY", raising=False)
-    monkeypatch.delenv("BAO_LLM_MODEL", raising=False)
+    monkeypatch.delenv("MEOW_LLM_BASE_URL", raising=False)
+    monkeypatch.delenv("MEOW_LLM_API_KEY", raising=False)
+    monkeypatch.delenv("MEOW_LLM_MODEL", raising=False)
 
-    response = llm.ask_task_assistant("alice", "What should I do next?")
+    response = task_assistant.ask_task_assistant("alice", "What should I do next?")
 
-    assert "BAO_LLM_BASE_URL" in response
+    assert "MEOW_LLM_BASE_URL" in response
 
 
 def test_llm_uses_user_tasks_and_configured_openai_endpoint(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """AI assistance sends only the authenticated user's task context."""
-    monkeypatch.setenv("BAO_LLM_BASE_URL", "https://example.test/v1")
-    monkeypatch.setenv("BAO_LLM_API_KEY", "test-key")
-    monkeypatch.setenv("BAO_LLM_MODEL", "FW-DeepSeek-V4.1-Flash")
+    monkeypatch.setenv("MEOW_LLM_BASE_URL", "https://example.test/v1")
+    monkeypatch.setenv("MEOW_LLM_API_KEY", "test-key")
+    monkeypatch.setenv("MEOW_LLM_MODEL", "FW-DeepSeek-V4.1-Flash")
     captured: dict[str, Any] = {}
 
     class FakeCompletions:
@@ -162,10 +162,10 @@ def test_llm_uses_user_tasks_and_configured_openai_endpoint(
             captured.update(kwargs)
             self.chat = SimpleNamespace(completions=FakeCompletions())
 
-    monkeypatch.setattr(llm, "OpenAI", FakeClient)
+    monkeypatch.setattr(task_assistant, "OpenAI", FakeClient)
     _run_command("alice", "todo buy groceries")
 
-    response = llm.ask_task_assistant("alice", "What is on my list?")
+    response = task_assistant.ask_task_assistant("alice", "What is on my list?")
 
     assert response == "Try the deadline first."
     assert captured["base_url"] == "https://example.test/v1"

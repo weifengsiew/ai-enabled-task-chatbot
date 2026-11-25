@@ -2,7 +2,7 @@
 
 ## How to Name Internal Methods and Static Methods
 
-In `src/bao/tasks.py`, `_append_task` is an internal method, so it uses a single leading underscore. It uses the instance's task list and saves through the storage layer:
+In `src/meow/tasks.py`, `_append_task` is an internal method, so it uses a single leading underscore. It uses the instance's task list and saves through the storage layer:
 
 ```python
 class Tasks:
@@ -26,7 +26,7 @@ The current codebase does not need a static method for this operation because `_
 
 ## When to Use OOP vs Functions
 
-In `src/bao/task.py`, `Task` is an object because each instance represents one task, owns task-specific state, and provides behavior that changes that state:
+In `src/meow/task.py`, `Task` is an object because each instance represents one task, owns task-specific state, and provides behavior that changes that state:
 
 ```python
 class Task:
@@ -74,7 +74,7 @@ class Task:
 
 `description`, `done`, and `note` are state. `mark_done()`, `unmark_done()`, and `add_note()` are behavior. Identity comes from each distinct `Task` instance, rather than from an invented `task_id` field.
 
-Use a function when the operation is a focused transformation or validation and does not need to own changing state. `src/bao/parser.py` uses `_parse_find` this way:
+Use a function when the operation is a focused transformation or validation and does not need to own changing state. `src/meow/parser.py` uses `_parse_find` this way:
 
 ```python
 def _parse_find(match: re.Match[str]) -> Command | ParseError:

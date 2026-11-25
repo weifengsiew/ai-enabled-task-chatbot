@@ -1,6 +1,6 @@
 # Refactor Notes
 
-## Existing commands in `bao.py`
+## Existing commands in `meow.py`
 
 All 13 commands are handled inside `run()`. The table follows their existing order.
 
@@ -24,7 +24,7 @@ All 13 commands are handled inside `run()`. The table follows their existing ord
 
 Extract each branch into a function using a consistent `handle_<command>` naming pattern.
 
-Move these functions into `command_handlers.py`. Keep `run()` in `bao.py` to coordinate the input loop and call the handlers.
+Move these functions into `command_handlers.py`. Keep `run()` in `meow.py` to coordinate the input loop and call the handlers.
 
 | Boolean condition | Suggested function |
 |---|---|
@@ -49,7 +49,7 @@ A handler’s `return` only exits that handler. `run()` must still handle exitin
 
 ### Step 1 results
 
-Extracted handlers into `command_handlers.py`; `bao.py` retains loading, command routing, and the input loop.
+Extracted handlers into `command_handlers.py`; `meow.py` retains loading, command routing, and the input loop.
 
 - `uv run python -m pytest inherited/tests`: **13 passed** on rerun; supplied tests unchanged.
 - Earlier comparisons matched the original output and saved bytes across five sessions, using both script and module entry points.
@@ -101,15 +101,15 @@ Extracted `save_tasks(tasks, data_file)` into `storage.py` and replaced the dupl
 
 - Directory creation and JSON serialization now have one implementation. The `json` import moved from `command_handlers.py` to `storage.py`.
 - Handlers still decide when to save; `storage.py` owns how task data is written. Save timing, directory creation, and JSON format are unchanged.
-- Loading remains in `bao.py`, so the storage responsibility is only partly separated. Handlers still combine parser, tasklist, and UI responsibilities.
+- Loading remains in `meow.py`, so the storage responsibility is only partly separated. Handlers still combine parser, tasklist, and UI responsibilities.
 - `uv run python -m pytest inherited/tests`: **13 passed**; supplied tests unchanged.
 - Standalone script execution and exact saved JSON were also verified.
 
 ## refactor step 4
 
-Extract file loading from `run()` in `bao.py` into `load_tasks(data_file: Path) -> list[dict[str, Any]]` in `storage.py`.
+Extract file loading from `run()` in `meow.py` into `load_tasks(data_file: Path) -> list[dict[str, Any]]` in `storage.py`.
 
-The function checks whether the file exists, reads and decodes its JSON, and returns the task data. A missing file returns an empty list. Read and JSON decoding errors propagate to `bao.py`, which handles them and displays the existing error message.
+The function checks whether the file exists, reads and decodes its JSON, and returns the task data. A missing file returns an empty list. Read and JSON decoding errors propagate to `meow.py`, which handles them and displays the existing error message.
 
 `run()` clears `TASKS` and extends it with the returned data. This places file access in `storage.py` while keeping task-list state and conversation handling in the caller.
 
@@ -117,7 +117,7 @@ Preserve existing behavior and verify it with the supplied tests.
 
 ### Step 4 results
 
-- Extracted `load_tasks()` into `storage.py`; `bao.py` retains task-list updates and error messages.
+- Extracted `load_tasks()` into `storage.py`; `meow.py` retains task-list updates and error messages.
 - All **13 supplied tests passed unchanged**. Missing-file handling, error propagation, and standalone script error display were also verified.
 
 ## refactor step 5

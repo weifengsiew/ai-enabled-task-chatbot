@@ -87,7 +87,7 @@ class Command(ABC):
 
 
 class CommandBye(Command):
-    """Terminate the conversation with Bao."""
+    """Terminate the conversation with Meow."""
 
     def __init__(self) -> None:
         self.command_keyword = "bye"

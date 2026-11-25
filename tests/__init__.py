@@ -1,1 +1,1 @@
-"""Tests for the bao application."""
+"""Tests for the meow application."""

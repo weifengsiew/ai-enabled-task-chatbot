@@ -1,4 +1,4 @@
-"""Provide optional LLM assistance for Bao's task workspace."""
+"""Provide optional AI assistance for Meow's task workspace."""
 
 from __future__ import annotations
 
@@ -11,19 +11,19 @@ from openai import (
     OpenAIError,
 )
 
-from bao.tasks import Tasks
+from meow.tasks import Tasks
 
-LLM_STYLE_VARIABLE = "BAO_LLM_API_STYLE"
-LLM_BASE_URL_VARIABLE = "BAO_LLM_BASE_URL"
-LLM_API_KEY_VARIABLE = "BAO_LLM_API_KEY"
-LLM_MODEL_VARIABLE = "BAO_LLM_MODEL"
+LLM_STYLE_VARIABLE = "MEOW_LLM_API_STYLE"
+LLM_BASE_URL_VARIABLE = "MEOW_LLM_BASE_URL"
+LLM_API_KEY_VARIABLE = "MEOW_LLM_API_KEY"
+LLM_MODEL_VARIABLE = "MEOW_LLM_MODEL"
 
 
 def llm_configuration_error() -> str | None:
     """Return a user-facing configuration error, or None when configured."""
     style = os.environ.get(LLM_STYLE_VARIABLE, "openai").casefold()
     if style != "openai":
-        return f"Unsupported LLM API style: {style}. Use BAO_LLM_API_STYLE=openai."
+        return f"Unsupported LLM API style: {style}. Use MEOW_LLM_API_STYLE=openai."
     missing = [
         name
         for name in (LLM_BASE_URL_VARIABLE, LLM_API_KEY_VARIABLE, LLM_MODEL_VARIABLE)
@@ -55,11 +55,11 @@ def ask_task_assistant(
         {
             "role": "system",
             "content": (
-                "You are Bao's task assistant. Help the user understand and "
+                "You are Meow's task assistant. Help the user understand and "
                 "navigate their tasks. Use only the task context provided. "
                 "Do not invent tasks and do not claim to modify, complete, or "
                 "delete anything. If the user wants an action, suggest the "
-                "exact Bao command they can submit. Put the command alone in "
+                "exact Meow command they can submit. Put the command alone in "
                 "a fenced text code block so it can be copied and pasted. "
                 "Use only these command forms: `todo <description> [/on "
                 "YYYY-MM-DD]`; `deadline <description> /by YYYY-MM-DD "
