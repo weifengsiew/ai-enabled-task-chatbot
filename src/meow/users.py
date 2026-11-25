@@ -1,4 +1,4 @@
-"""Persist locally created Bao user accounts."""
+"""Persist locally created Meow user accounts."""
 
 from __future__ import annotations
 

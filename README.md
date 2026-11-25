@@ -4,21 +4,21 @@ An AI-enabled conversational task manager for capturing, organizing, and retriev
 deadlines, events, and recurring tasks. It combines explicit task commands with a natural-language interface powered 
 by an LLM, so users can manage tasks without navigating complex command syntax.
 
-## What Bao can do
+## What Meow can do
 
-Bao provides a conversational interface for creating, finding, and managing everyday tasks through the Streamlit app.
+Meow provides a conversational interface for creating, finding, and managing everyday tasks through the Streamlit app.
 
-| Chat with Bao | Create tasks | Find and update tasks |
+| Chat with Meow | Create tasks | Find and update tasks |
 | --- | --- | --- |
-| ![Chat with Bao](assets/cats/chat-cat.png) | ![Create a task](assets/cats/create-cat.png) | ![Find and update tasks](assets/cats/search-cat.png) |
+| ![Chat with Meow](assets/cats/chat-cat.png) | ![Create a task](assets/cats/create-cat.png) | ![Find and update tasks](assets/cats/search-cat.png) |
 
-Bao supports four task types:
+Meow supports four task types:
 
 | Todo | Deadline | Recurring task | Event |
 | --- | --- | --- | --- |
 | ![Create a todo](assets/cats/todo-cat.png) | ![Create a deadline](assets/cats/deadline-cat.png) | ![Create a recurring task](assets/cats/recurring-cat.png) | ![Create an event](assets/cats/event-cat.png) |
 
-Watch Bao in action:
+Watch Meow in action:
 
 [![Watch the AI-Enabled Task Chatbot demo](https://img.youtube.com/vi/Bg8MmsV6iBM/hqdefault.jpg)](https://youtu.be/Bg8MmsV6iBM?is=1H__O-CL5IOFH3Sn)
 
@@ -26,27 +26,27 @@ Watch Bao in action:
 
 - [Streamlit User Guide](STREAMLIT_USER_GUIDE.md)
 
-## Setup and run `bao`
+## Setup and run `meow`
 
 Requires Python 3.13 and uv. From the repository root, install dependencies and start the CLI:
 
 ```bash
 uv sync
 uv run python --version
-uv run bao
+uv run meow
 ```
 
 To start the Streamlit app instead, run:
 
 ```bash
-uv run streamlit run src/bao/streamlit_app.py \
+uv run streamlit run src/meow/streamlit_application.py \
   --server.address 127.0.0.1 \
   --server.port 7860
 ```
 
 Then open [http://127.0.0.1:7860](http://127.0.0.1:7860) in your browser.
 
-To enable AI assistance, configure the OpenAI-compatible LLM endpoint, model, and API key, then enable **Ask Bao AI** in Streamlit. See the [LLM setup instructions](STREAMLIT_USER_GUIDE.md#configure-the-api-key-and-start-bao-with-llm-assistance).
+To enable AI assistance, configure the OpenAI-compatible LLM endpoint, model, and API key, then enable **Ask Meow AI** in Streamlit. See the [LLM setup instructions](STREAMLIT_USER_GUIDE.md#configure-the-api-key-and-start-meow-with-llm-assistance).
 
 ## Project Motivation
 
@@ -56,7 +56,7 @@ This project explores how LLM-powered conversational interfaces can make everyda
 
 - Object-oriented programming: Shared `Task` and `Command` base classes with subclasses for specific task and command types.
 - Modular architecture:
-  - Interface modules: `cli.py` and `streamlit_app.py` handle user interaction.
+  - Interface modules: `command_line_interface.py` and `streamlit_application.py` handle user interaction.
   - Command modules: `read_task_commands.py`, `add_task_commands.py`, and `modify_task_commands.py` handle task queries, creation, and updates.
   - Supporting modules: `parser.py` parses dates, times, and task numbers; `task.py` defines task types and their display and serialization; `tasks.py` manages the task list and JSON loading and saving.
 - Automated quality checks: GitHub Actions runs tests, ruff linting and formatting, and mypy type hint checking.
@@ -87,7 +87,7 @@ This project explores how LLM-powered conversational interfaces can make everyda
 | Type checking | mypy |
 | Continuous integration | GitHub Actions |
 
-## Commands supported by `bao`
+## Commands supported by `meow`
 
 | Command | Purpose |
 | --- | --- |
@@ -108,8 +108,8 @@ This project explores how LLM-powered conversational interfaces can make everyda
 ## Example conversation
 
 ```text
-$ uv run bao
-Hello! I'm bao. What needs doing?
+$ uv run meow
+Hello! I'm meow. What needs doing?
 > todo buy groceries
 Added:
 [T][ ]buy groceries
@@ -163,13 +163,13 @@ uv run pytest
 
 ## Architecture
 
-### `src/bao/` file responsibilities
+### `src/meow/` file responsibilities
 
 ```text
-src/bao/
+src/meow/
 ├── __init__.py
-│   └── Marks `bao` as a Python package.
-├── cli.py
+│   └── Marks `meow` as a Python package.
+├── command_line_interface.py
 │   └── Starts the application, reads user input, and runs the command loop.
 ├── read_task_commands.py
 │   └── Defines the command base class, command dispatcher, and read/control commands:
@@ -192,16 +192,16 @@ src/bao/
 
 Adding a command is intentionally simple, taking just 7 steps:
 
-`src/bao/` is the easiest part of Bao to extend because each command's matching, parsing, and execution logic lives together in one command class.
+`src/meow/` is the easiest part of Meow to extend because each command's matching, parsing, and execution logic lives together in one command class.
 
 ### 1. Add a new command class
 
 Create a subclass of `Command` in the appropriate module. For a command that reads tasks, use
-`src/bao/read_task_commands.py`. For a command that creates a task, use
-`src/bao/add_task_commands.py`. For a command that changes an existing task, use
-`src/bao/modify_task_commands.py`.
+`src/meow/read_task_commands.py`. For a command that creates a task, use
+`src/meow/add_task_commands.py`. For a command that changes an existing task, use
+`src/meow/modify_task_commands.py`.
 
-For example, add `CommandFilter` to `src/bao/read_task_commands.py`:
+For example, add `CommandFilter` to `src/meow/read_task_commands.py`:
 
 ```python
 class CommandFilter(Command):
@@ -280,13 +280,13 @@ def execute_command(self, tasks: Tasks) -> str:
 ### 6. Register new command class in `COMMAND_CLASSES`
 
 Finally, register `CommandFilter` in the `COMMAND_CLASSES` tuple in
-`src/bao/read_task_commands.py`, alongside the existing command classes. The dispatcher loops
+`src/meow/read_task_commands.py`, alongside the existing command classes. The dispatcher loops
 through `COMMAND_CLASSES`, calls the keyword matcher, then calls the parser. Only the parsed
 command's `execute_command` method reads the task collection; it does not change it.
 
 ### 7. Trigger CI and complete the pull request
 
 Add tests for each supported task type, a valid type with no matching tasks, and invalid filter
-input to `tests/test_bao.py`.
+input to `tests/test_meow.py`.
 
 Then open a pull request on GitHub and wait for the GitHub Actions checks to pass.

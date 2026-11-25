@@ -1,4 +1,4 @@
-"""Bao command-session tests using monkeypatch and capsys directly."""
+"""Meow command-session tests using monkeypatch and capsys directly."""
 
 import builtins
 import json
@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from bao.cli import chat
+from meow.command_line_interface import chat
 
 
 @pytest.fixture(autouse=True)

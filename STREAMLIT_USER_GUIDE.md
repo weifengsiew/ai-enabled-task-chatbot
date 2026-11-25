@@ -1,13 +1,13 @@
-# Bao Streamlit User Guide
+# Meow Streamlit User Guide
 
-Bao is a local task manager with a browser interface.
+Meow is a local task manager with a browser interface.
 
-## Start Bao
+## Start Meow
 
 From the project directory, run:
 
 ```bash
-uv run streamlit run src/bao/streamlit_app.py \
+uv run streamlit run src/meow/streamlit_application.py \
   --server.address 127.0.0.1 \
   --server.port 7860
 ```
@@ -15,14 +15,14 @@ uv run streamlit run src/bao/streamlit_app.py \
 Open [http://127.0.0.1:7860](http://127.0.0.1:7860). If port `7860` is busy,
 replace the port with `7861` in the command and URL.
 
-Bao is intended for local use. Do not expose it publicly.
+Meow is intended for local use. Do not expose it publicly.
 
 ## Cat-themed workspace
 
-Bao uses friendly cat illustrations to make each workflow easier to recognize.
+Meow uses friendly cat illustrations to make each workflow easier to recognize.
 The illustrations are decorative and always paired with clear text labels.
 
-| Workflow | Bao’s visual cue |
+| Workflow | Meow’s visual cue |
 | --- | --- |
 | Chat about task | <img src="assets/cats/chat-cat.png" alt="Chat cat with speech bubble" width="120"> |
 | Create task | <img src="assets/cats/create-cat.png" alt="Cat painting a task" width="120"> |
@@ -48,22 +48,22 @@ user has a private task list.
 Configured users can be supplied before startup:
 
 ```bash
-export BAO_USERS="alice:choose-a-password,bob:choose-another-password"
+export MEOW_USERS="alice:choose-a-password,bob:choose-another-password"
 ```
 
 To enable AI assistance, configure the OpenAI-compatible LiteLLM endpoint
-before starting Bao:
+before starting Meow:
 
 ```bash
-export BAO_LLM_API_STYLE="openai"
-export BAO_LLM_BASE_URL="https://your-llm-endpoint.example.com/v1"
-export BAO_LLM_API_KEY="your-api-key"
-export BAO_LLM_MODEL="your-model-name"
+export MEOW_LLM_API_STYLE="openai"
+export MEOW_LLM_BASE_URL="https://your-llm-endpoint.example.com/v1"
+export MEOW_LLM_API_KEY="your-api-key"
+export MEOW_LLM_MODEL="your-model-name"
 ```
 
-### Configure the API key and start Bao with LLM assistance
+### Configure the API key and start Meow with LLM assistance
 
-Bao reads the LLM settings from environment variables. On macOS with the
+Meow reads the LLM settings from environment variables. On macOS with the
 default Zsh shell, add them to `~/.zshrc` so they remain available in future
 Terminal sessions:
 
@@ -75,10 +75,10 @@ Add the following lines, replacing the placeholders with the base URL, model
 name, and API key supplied by your LLM provider or administrator:
 
 ```bash
-export BAO_LLM_API_STYLE="openai"
-export BAO_LLM_BASE_URL="https://your-llm-endpoint.example.com/v1"
-export BAO_LLM_MODEL="your-model-name"
-export BAO_LLM_API_KEY="your-api-key"
+export MEOW_LLM_API_STYLE="openai"
+export MEOW_LLM_BASE_URL="https://your-llm-endpoint.example.com/v1"
+export MEOW_LLM_MODEL="your-model-name"
+export MEOW_LLM_API_KEY="your-api-key"
 ```
 
 In Nano, press **Ctrl+O**, press **Enter** to save, then press **Ctrl+X** to
@@ -87,52 +87,52 @@ reload the configuration:
 
 ```bash
 source ~/.zshrc
-test -n "$BAO_LLM_API_KEY" && echo "API key is set"
+test -n "$MEOW_LLM_API_KEY" && echo "API key is set"
 ```
 
 When you open a new Terminal window, macOS loads `~/.zshrc` automatically.
-Start Bao from the project directory:
+Start Meow from the project directory:
 
 ```bash
-uv run streamlit run src/bao/streamlit_app.py --server.port 7860
+uv run streamlit run src/meow/streamlit_application.py --server.port 7860
 ```
 
 Open [http://127.0.0.1:7860](http://127.0.0.1:7860), sign in, select
-**Enable LLM**, and enable **Ask Bao AI in Chat about task**. Then go to
-**Chat about task** and use **Ask Bao AI**.
+**Enable LLM**, and enable **Ask Meow AI in Chat about task**. Then go to
+**Chat about task** and use **Ask Meow AI**.
 
 Do not commit `~/.zshrc` or the API key to the repository. If the key is ever
 exposed, rotate it and update the value in `~/.zshrc`.
 
-Keep the API key out of source control. Bao sends the signed-in user's task
-context to the configured endpoint only when **Ask Bao AI** is selected.
+Keep the API key out of source control. Meow sends the signed-in user's task
+context to the configured endpoint only when **Ask Meow AI** is selected.
 
 ## Workspace
 
 After signing in, use the left navigation to select:
 
-- **Chat about task** — enter direct Bao commands.
+- **Chat about task** — enter direct Meow commands.
 - **Enable LLM** — check the LLM configuration and enable AI assistance for
   task chat.
 - **Create task** — create a task with a guided form.
 - **View task** — filter tasks by type.
 - **Search and update task** — find, edit, complete, or delete a task.
 
-The conversation panel shows your commands and Bao's responses. **Clear**
+The conversation panel shows your commands and Meow's responses. **Clear**
 removes the displayed conversation without deleting saved tasks.
 
 In **Enable LLM**, confirm that the configured endpoint and model are detected,
-then enable **Ask Bao AI in Chat about task**. In **Chat about task**, use
-**Submit** for normal Bao commands and **Ask Bao AI** for natural-language help
+then enable **Ask Meow AI in Chat about task**. In **Chat about task**, use
+**Submit** for normal Meow commands and **Ask Meow AI** for natural-language help
 such as “Which task should I do next?” The AI assistant is read-only; it can
-suggest a Bao command but does not directly modify tasks.
+suggest a Meow command but does not directly modify tasks.
 
-When Bao AI suggests an action, it places the exact Bao command in a
+When Meow AI suggests an action, it places the exact Meow command in a
 copyable code block. Copy it, paste it into the Command box, and select
 **Submit** to execute it.
 
-The LLM enablement choice is retained while navigating within the current Bao
-session. After restarting Bao, open **Enable LLM** and enable it again.
+The LLM enablement choice is retained while navigating within the current Meow
+session. After restarting Meow, open **Enable LLM** and enable it again.
 
 ## Create tasks
 
@@ -186,18 +186,18 @@ delete 1
 ```
 
 Use `YYYY-MM-DD` for dates and four-digit `HHMM` for times. Use `/by` for
-deadline commands; Bao also accepts `/due` as an alias.
+deadline commands; Meow also accepts `/due` as an alias.
 
-## Stop Bao
+## Stop Meow
 
-Select **Close Bao**, confirm the action, and Bao will stop the current local
+Select **Close Meow**, confirm the action, and Meow will stop the current local
 server. Restart it from the terminal to use it again.
 
 ## Troubleshooting
 
 - If the page does not load, confirm that the Streamlit process is still
   running in the terminal.
-- If port `7860` is occupied, start Bao on another local port.
-- If tasks appear missing, sign in with the same username and start Bao from
+- If port `7860` is occupied, start Meow on another local port.
+- If tasks appear missing, sign in with the same username and start Meow from
   the same project directory where `data/users/` is stored.
 - Stop the server with `Ctrl+C` in the terminal when necessary.

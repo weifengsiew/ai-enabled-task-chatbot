@@ -4,33 +4,21 @@ from __future__ import annotations
 
 import re
 from datetime import date, time
-from typing import TYPE_CHECKING, overload
+from typing import TYPE_CHECKING, TypeVar
 
 if TYPE_CHECKING:
     from .modify_task_commands import CommandDelete, CommandMark, CommandUnmark
 
-
-@overload
-def _parse_number_command(
-    command: CommandMark, user_response: str
-) -> CommandMark | str | None: ...
-
-
-@overload
-def _parse_number_command(
-    command: CommandUnmark, user_response: str
-) -> CommandUnmark | str | None: ...
+    type NumberCommand = CommandMark | CommandUnmark | CommandDelete
+    NumberCommandT = TypeVar("NumberCommandT", bound=NumberCommand)
+else:
+    NumberCommandT = TypeVar("NumberCommandT")
 
 
-@overload
-def _parse_number_command(
-    command: CommandDelete, user_response: str
-) -> CommandDelete | str | None: ...
-
-
-def _parse_number_command(
-    command: CommandMark | CommandUnmark | CommandDelete, user_response: str
-) -> CommandMark | CommandUnmark | CommandDelete | str | None:
+def _parse_number_command(  # noqa: UP047
+    command: NumberCommandT,
+    user_response: str,
+) -> NumberCommandT | str | None:
     """
     Parse a command that accepts one task number.
 
@@ -41,10 +29,9 @@ def _parse_number_command(
 
     Returns:
     --------
-    CommandMark | CommandUnmark | CommandDelete | str | None:
+    NumberCommandT | str | None:
         The parsed command, a usage message, or None when the keyword does not match.
     """
-
     matched_keyword = command.match_user_response_with_command_keyword(user_response)
     if not matched_keyword:
         return None
